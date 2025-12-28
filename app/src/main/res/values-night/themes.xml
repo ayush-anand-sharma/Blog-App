@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style
+        name="Theme.BlogApp"
+        parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    </style>
+
+    <style
+        name="round"
+        parent="">
+        <item
+            name="cornerSize">50%
+        </item>
+    </style>
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id">997871715639-of8oqsmr1om4id86u33ec8haknsouqp0.apps.googleusercontent.com</string>
+    <string name="app_name">Blog App\n</string>
+    <string name="profile">Profile</string>
+    <string name="your_name">Your Name</string>
+    <string name="your_email">your.email@example.com</string>
+    <string name="my_blogs">My Blogs</string>
+    <string name="liked_blogs">Liked Blogs</string>
+</resources>

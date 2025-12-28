@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".main.ReadMore">
+
+    <!-- Scrollable content: bottom constrained to top of save FAB so content can scroll above FAB -->
+    <ScrollView
+        android:id="@+id/scrollContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="0dp">
+
+            <ImageButton
+                android:id="@+id/BackImageButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/back_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/back_icon"
+                tools:ignore="ImageContrastCheck,RedundantDescriptionCheck" />
+
+            <TextView
+                android:id="@+id/titleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/montserrat_semibold"
+                android:text="@string/title"
+                android:textColor="@color/blue"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/BackImageButton"
+                app:layout_constraintTop_toBottomOf="@+id/BackImageButton"
+                tools:ignore="TextContrastCheck" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardView5"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginTop="20dp"
+                app:cardCornerRadius="70dp"
+                app:layout_constraintStart_toStartOf="@+id/titleText"
+                app:layout_constraintTop_toBottomOf="@+id/titleText">
+
+                <ImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/user_profile_image"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/default_avatar" />
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/profileName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="7dp"
+                android:fontFamily="@font/montserrat_light"
+                android:text="@string/name"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@+id/cardView5"
+                app:layout_constraintStart_toEndOf="@+id/cardView5"
+                app:layout_constraintTop_toTopOf="@+id/cardView5" />
+
+            <TextView
+                android:id="@+id/profileDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_medium_italic"
+                android:text="@string/date"
+                android:textColor="@color/dateColor"
+                app:layout_constraintBottom_toBottomOf="@+id/profileName"
+                app:layout_constraintEnd_toEndOf="@+id/titleText"
+                app:layout_constraintTop_toTopOf="@+id/profileName"
+                tools:ignore="TextContrastCheck" />
+
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:background="?android:attr/listDivider"
+                app:layout_constraintEnd_toEndOf="@+id/profileDate"
+                app:layout_constraintStart_toStartOf="@+id/cardView5"
+                app:layout_constraintTop_toBottomOf="@+id/cardView5" />
+
+            <!-- Make description wrap_content so ScrollView can measure properly -->
+            <TextView
+                android:id="@+id/descriptionText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/montserrat_light"
+                android:padding="10dp"
+                android:text="@string/description"
+                android:textColor="@color/black"
+                app:layout_constraintEnd_toEndOf="@+id/divider2"
+                app:layout_constraintStart_toStartOf="@+id/divider2"
+                app:layout_constraintTop_toBottomOf="@+id/divider2" />
+
+            <!-- If you need extra spacing so last item isn't hidden behind FAB on some screens,
+                 add a spacer view at the bottom instead of padding on the inner layout -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/descriptionText" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <!-- FABs fixed outside the ScrollView -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/saveFloatingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:clickable="true"
+        android:contentDescription="@string/save_button"
+        app:backgroundTint="@color/save_fab_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:shapeAppearance="@style/round"
+        app:srcCompat="@drawable/bookmark_red_icon"
+        app:tint="@color/red"
+        tools:ignore="ClassNameCheck,KeyboardInaccessibleWidget,RedundantDescriptionCheck" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/likeFloatingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:contentDescription="@string/like_button"
+        app:backgroundTint="@color/like_fab_background"
+        app:layout_constraintBottom_toTopOf="@+id/saveFloatingButton"
+        app:layout_constraintEnd_toEndOf="@+id/saveFloatingButton"
+        app:layout_constraintStart_toStartOf="@+id/saveFloatingButton"
+        app:shapeAppearance="@style/round"
+        app:srcCompat="@drawable/white_and_black_like_heart_icon"
+        app:tint="@android:color/white"
+        tools:ignore="ClassNameCheck,KeyboardInaccessibleWidget,RedundantDescriptionCheck" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

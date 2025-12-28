@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="All"
+    tools:context=".register.RegisterPage">
+
+    <ImageView
+        android:id="@+id/backgroundImageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/background_texture"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription,ImageContrastCheck" />
+
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/back_button"
+        android:src="@drawable/back_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/black"
+        tools:ignore="RedundantDescriptionCheck" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="60dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/blog_logo"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:text="Create A New Account"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView2"
+        tools:ignore="HardcodedText" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="20dp"
+        app:cardCornerRadius="100dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4">
+
+        <ImageView
+            android:id="@+id/user_profile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/profile_icon"
+            tools:ignore="ContentDescription" />
+    </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/edit_profile_icon"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:background="@color/white"
+        android:backgroundTint="@color/white"
+        android:elevation="10dp"
+        android:src="@drawable/edit_icon"
+        app:layout_constraintBottom_toBottomOf="@+id/cardView"
+        app:layout_constraintEnd_toEndOf="@+id/cardView"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/choose_photo_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:text="Touch To Choose Profile Picture"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/cardView"
+        app:layout_constraintStart_toStartOf="@+id/cardView"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="0dp"
+        android:layout_height="57dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/background_shape_blue"
+        android:drawableLeft="@drawable/name_icon"
+        android:drawablePadding="10dp"
+        android:drawableTint="@color/black"
+        android:ems="10"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:hint="Name"
+        android:inputType="text"
+        android:paddingLeft="20dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/choose_photo_text"
+        tools:ignore="Autofill,RtlHardcoded,RtlSymmetry,TextFields,TextContrastCheck,VisualLintTextFieldSize" />
+
+    <EditText
+        android:id="@+id/email"
+        android:layout_width="0dp"
+        android:layout_height="57dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/background_shape_blue"
+        android:drawableLeft="@drawable/email_icon"
+        android:drawablePadding="10dp"
+        android:drawableTint="@color/black"
+        android:ems="10"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:paddingLeft="20dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        app:layout_constraintEnd_toEndOf="@+id/name"
+        app:layout_constraintStart_toStartOf="@+id/name"
+        app:layout_constraintTop_toBottomOf="@+id/name"
+        tools:ignore="Autofill,TextFields,TextContrastCheck,VisualLintTextFieldSize" />
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="0dp"
+        android:layout_height="57dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/background_shape_blue"
+        android:drawableLeft="@drawable/password_icon"
+        android:drawablePadding="10dp"
+        android:drawableTint="@color/black"
+        android:ems="10"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:paddingLeft="20dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        app:layout_constraintEnd_toEndOf="@+id/email"
+        app:layout_constraintStart_toStartOf="@+id/email"
+        app:layout_constraintTop_toBottomOf="@+id/email"
+        tools:ignore="Autofill,TextFields,TextContrastCheck,VisualLintTextFieldSize" />
+
+    <ImageView
+        android:id="@+id/show_password"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/password"
+        app:layout_constraintEnd_toEndOf="@+id/password"
+        app:layout_constraintTop_toTopOf="@+id/password"
+        app:srcCompat="@drawable/show_password_icon"
+        tools:ignore="ContentDescription" />
+
+    <Button
+        android:id="@+id/register_button"
+        android:layout_width="0dp"
+        android:layout_height="57dp"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="@color/blue"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:text="REGISTER"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:cornerRadius="15dp"
+        app:layout_constraintEnd_toEndOf="@+id/password"
+        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintTop_toBottomOf="@+id/password"
+        tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+
+    <TextView
+        android:id="@+id/login_here"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:text="Already Have An Account ? Login Here"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/register_button"
+        app:layout_constraintStart_toStartOf="@+id/register_button"
+        app:layout_constraintTop_toBottomOf="@+id/register_button" />
+
+    <FrameLayout
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="100dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/white" />
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

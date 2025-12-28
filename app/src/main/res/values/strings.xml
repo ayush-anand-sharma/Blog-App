@@ -1,0 +1,33 @@
+<resources>
+    <string name="default_web_client_id">997871715639-of8oqsmr1om4id86u33ec8haknsouqp0.apps.googleusercontent.com</string>
+    <string name="app_name">Blog App\n</string>
+    <string name="user_profile_image">User profile image</string>
+    <string name="like_button">Like button</string>
+    <string name="save_button">Save button</string>
+    <string name="back_button">Back button</string>
+    <string name="title">Title</string>
+    <string name="name">Name</string>
+    <string name="date">Date</string>
+    <string name="description">Description</string>
+    <string name="blog_heading">Please Start Writing Better Git Commits</string>
+    <string name="new_blogger">New Blogger</string>
+    <string name="blog_date">Jul 29, 2022</string>
+    <string name="blog_post_body">I recently read a helpful article on Hashnode by Simon Egersand titled Write Git Commit Messages Your Colleagues Will Love, and it inspired me to dive a little deeper into understanding what makes a Git commit good or bad.</string>
+    <string name="read_more">Read More</string>
+    <string name="like_count">20</string>
+    <string name="profile">Profile</string>
+    <string name="your_name">Your Name</string>
+    <string name="your_email">your.email@example.com</string>
+    <string name="my_blogs">My Blogs</string>
+    <string name="liked_blogs">Liked Blogs</string>
+    <string name="edit_profile_image">Edit profile image</string>
+    <string name="edit_full_name">Edit full name</string>
+    <string name="edit_email">Edit email</string>
+    <string name="add_article">Add Article</string>
+    <string name="saved_articles">Saved Articles</string>
+    <string name="change_password">Change Password</string>
+    <string name="password_label">Password</string>
+    <string name="masked_password">********</string>
+    <string name="prompt_change_password">Do you want to change password?</string>
+    <string name="member_since">Member Since:</string>
+</resources>

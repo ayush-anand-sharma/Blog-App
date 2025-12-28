@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".main.HomePage">
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.1"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/background_texture"
+        tools:ignore="ContentDescription,ImageContrastCheck" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="18dp"
+        android:background="@color/white"
+        android:fontFamily="@font/montserrat_semibold"
+        android:text="New Feeds"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView3"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="100dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/default_avatar"
+            tools:ignore="ContentDescription" />
+    </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/save_article_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="40dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="@+id/cardView3"
+        app:layout_constraintEnd_toStartOf="@+id/cardView3"
+        app:layout_constraintTop_toTopOf="@+id/cardView3"
+        app:srcCompat="@drawable/bookmark_red_icon"
+        tools:ignore="ContentDescription" />
+
+    <SearchView
+        android:id="@+id/search_block"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search"
+        android:searchIcon="@drawable/search_icon"
+        app:layout_constraintEnd_toEndOf="@+id/cardView3"
+        app:layout_constraintStart_toStartOf="@+id/textView9"
+        app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/blogRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/search_block"
+        app:layout_constraintStart_toStartOf="@+id/search_block"
+        app:layout_constraintTop_toBottomOf="@+id/search_block"
+        tools:listitem="@layout/blog_item" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingAddArticleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="35dp"
+        android:layout_marginBottom="50dp"
+        android:backgroundTint="@color/blue"
+        android:clickable="true"
+        app:borderWidth="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:shapeAppearanceOverlay="@style/round"
+        app:srcCompat="@drawable/plus_icon"
+        app:tint="@android:color/white"
+        tools:ignore="ClassNameCheck,ContentDescription,ImageContrastCheck,KeyboardInaccessibleWidget,SpeakableTextPresentCheck" />
+
+    <FrameLayout
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="100dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/white" />
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

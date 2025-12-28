@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+    android:elevation="5dp"
+    app:cardCornerRadius="10dp"
+    tools:ignore="All">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Heading -->
+        <TextView
+            android:id="@+id/heading"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/montserrat_semibold"
+            android:maxLines="2"
+            android:text="@string/blog_heading"
+            android:textColor="@color/blue"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@+id/cardView4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Horizontal Barrier -->
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="heading,cardView4" />
+
+        <!-- Profile Image -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView4"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardCornerRadius="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/profile"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/user_profile_image"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_avatar" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/userName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/montserrat_semibold"
+            android:text="@string/new_blogger"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/barrier" />
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_medium_italic"
+            android:text="@string/blog_date"
+            android:textColor="@color/dateColor"
+            app:layout_constraintBaseline_toBaselineOf="@+id/userName"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/userName" />
+
+        <!-- Blog Post Body -->
+        <TextView
+            android:id="@+id/blogPost"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/montserrat_light"
+            android:letterSpacing="0.03"
+            android:lineHeight="22sp"
+            android:maxLines="4"
+            android:text="@string/blog_post_body"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider"
+            tools:ignore="VisualLintLongText"
+            tools:targetApi="28" />
+
+        <!-- Read More Button -->
+        <Button
+            android:id="@+id/readMoreButton"
+            android:layout_width="120dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/blue"
+            android:text="@string/read_more"
+            app:cornerRadius="9dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/blogPost"
+            tools:ignore="TextContrastCheck,TextSizeCheck" />
+
+        <Button
+            android:id="@+id/deleteButton"
+            android:layout_width="120dp"
+            android:layout_height="48dp"
+            android:backgroundTint="@color/red"
+            android:text="Delete"
+            android:visibility="gone"
+            app:cornerRadius="9dp"
+            app:layout_constraintBottom_toBottomOf="@+id/readMoreButton"
+            app:layout_constraintEnd_toStartOf="@+id/likeCount"
+            app:layout_constraintStart_toEndOf="@+id/readMoreButton"
+            app:layout_constraintTop_toTopOf="@+id/readMoreButton"
+            tools:visibility="visible" />
+
+        <!-- Like Count -->
+        <TextView
+            android:id="@+id/likeCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/like_count"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/readMoreButton"
+            app:layout_constraintEnd_toStartOf="@+id/likeButton"
+            app:layout_constraintTop_toTopOf="@+id/readMoreButton" />
+
+        <!-- Like Button -->
+        <ImageButton
+            android:id="@+id/likeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/like_button"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/likeCount"
+            app:layout_constraintEnd_toStartOf="@+id/postSaveButton"
+            app:layout_constraintTop_toTopOf="@+id/likeCount"
+            app:srcCompat="@drawable/white_and_black_like_heart_icon"
+            tools:ignore="ImageContrastCheck,RedundantDescriptionCheck" />
+
+        <!-- Save Button -->
+        <ImageButton
+            android:id="@+id/postSaveButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/save_button"
+            android:padding="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/likeButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/likeButton"
+            app:srcCompat="@drawable/bookmark_red_icon"
+            tools:ignore="ImageContrastCheck,RedundantDescriptionCheck" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
