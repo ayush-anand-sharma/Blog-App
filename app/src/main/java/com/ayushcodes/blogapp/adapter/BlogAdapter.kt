@@ -62,13 +62,20 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
                 userName.text = blogItem.fullName // Sets the user name text
                 date.text = blogItem.date // Sets the date text
                 blogPost.text = blogItem.blogPost // Sets the blog post text
-                
-                Glide.with(profile.context) // Initiates Glide with the profile view's context
-                    .load(blogItem.profileImage) // Loads the profile image URL
-                    .apply(RequestOptions.circleCropTransform()) // Applies a circle crop transformation
-                    .placeholder(R.drawable.default_avatar) // Sets a placeholder image
-                    .error(R.drawable.default_avatar) // Sets an error image
-                    .into(profile) // Loads the image into the profile ImageView
+
+                // This block handles loading the user's profile picture using Glide.
+                // It includes a specific workaround for Google User profile images.
+                var imageUrl = blogItem.profileImage // Get the profile image URL from the data model.
+                if (imageUrl?.contains("googleusercontent.com") == true) { // Check if the URL is a Google profile picture.
+                    imageUrl = imageUrl.replace("s96-c", "s400-c") // Modify the URL to request a larger image size, which can fix loading issues.
+                }
+
+                Glide.with(profile.context) // Initiates Glide with the profile view's context.
+                    .load(imageUrl) // Loads the (potentially modified) profile image URL.
+                    .apply(RequestOptions.circleCropTransform()) // Applies a circle crop transformation to make it circular.
+                    .placeholder(R.drawable.default_avatar) // Sets a placeholder image to show while the image is loading.
+                    .error(R.drawable.default_avatar) // Sets an error image to show if the image fails to load.
+                    .into(profile) // Loads the image into the profile ImageView.
 
                 readMoreButton.setOnClickListener { onReadMoreClick(blogItem) } // Sets click listener for "Read More"
                 
