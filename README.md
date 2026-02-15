@@ -3,23 +3,6 @@
 A full-featured Android blogging application built with **Kotlin** and **Firebase**.  
 This app provides a platform for users to share their thoughts, explore articles from others, and engage with content through likes and saved lists.
 
----
-
-## 📲 Install Latest APK
-
-👉 **[Download & Install Blog App](https://appdistribution.firebase.dev/i/551d5c32637ff3f0)**
-
-> Always installs the **latest version** automatically.
-
----
-
-## 🎬 Video Demo
-
-▶️ Watch the full demo here:  
-https://youtu.be/aD5xKw-HxsI?si=RoNRV8-aUWehLNl6
-
----
-
 ## ✨ Features
 
 ### 🔐 Secure Authentication
@@ -72,8 +55,14 @@ https://youtu.be/aD5xKw-HxsI?si=RoNRV8-aUWehLNl6
 
 ---
 
-## 🚀 Getting Started
+## 🎬 Video Demo
 
-1. Clone the repository
+▶️ Watch the full demo here:  
+https://youtu.be/aD5xKw-HxsI?si=RoNRV8-aUWehLNl6
+
+---
+
+## 🚀 Clone the repository
+
 ```bash
 git clone https://github.com/ayush-anand-sharma/Blog-App.git
