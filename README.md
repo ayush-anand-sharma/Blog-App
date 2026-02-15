@@ -1,73 +1,79 @@
-Blog App 📱✍️
+# Blog App 📱✍️
 
-A full-featured Android blogging application built with Kotlin and Firebase. This app provides a platform for users to share their thoughts, read articles from others, and engage with content through likes and saved lists.
+A full-featured Android blogging application built with **Kotlin** and **Firebase**.  
+This app provides a platform for users to share their thoughts, explore articles from others, and engage with content through likes and saved lists.
 
-✨ Features:-
+---
 
-    • Secure Authentication:
+## 📲 Install Latest APK
 
-        ◦ Sign up and Log in using Email/Password.
+👉 **[Download & Install Blog App](https://appdistribution.firebase.dev/i/551d5c32637ff3f0)**
 
-        ◦ Google Sign-In integration for one-tap access.
+> Always installs the **latest version** automatically.
 
-    • Create & Share:
+---
 
-        ◦ Write and publish your own blog posts with titles and detailed descriptions.
+## 🎬 Video Demo
 
-        ◦ Real-time updates to the global feed.
+▶️ Watch the full demo here:  
+https://youtu.be/aD5xKw-HxsI?si=RoNRV8-aUWehLNl6
 
-    • Discover Content:
+---
 
-        ◦ Scroll through a feed of the latest community posts.
+## ✨ Features
 
-        ◦ Search functionality to find articles by title or content.
+### 🔐 Secure Authentication
+- Sign up and Log in using Email/Password.
+- Google Sign-In integration for one-tap access.
 
-    • Engage:
+### ✍️ Create & Share
+- Write and publish blog posts with titles and detailed descriptions.
+- Real-time updates to the global feed.
 
-        ◦ Like posts to show appreciation.
+### 🔎 Discover Content
+- Scroll through the latest community posts.
+- Search functionality to find articles by title or content.
 
-        ◦ Save articles to your personal "Saved" list for later reading.
+### ❤️ Engage
+- Like posts to show appreciation.
+- Save articles to your personal **Saved** list for later reading.
 
-    • User Profile:
+### 👤 User Profile
+- Customize profile picture and display name.
+- View your personal post history (**My Blogs**).
+- Access posts you've liked.
+- Account management (Change Password, Update Email).
 
-        ◦ Customize your profile with a profile picture and display name.
+### 📡 Offline Support
+- Firebase persistence enabled for offline viewing.
+- Smart network monitoring with **Back Online** notifications.
 
-        ◦ View your personal post history ("My Blogs").
+---
 
-        ◦ Access a curated list of posts you've liked.
+## 🛠️ Tech Stack
 
-        ◦ Account management (Change Password, Update Email).
+### 💻 Language
+- Kotlin
 
-    • Offline Support:
+### ☁️ Backend (Firebase)
+- Authentication — User management & Google Sign-In
+- Realtime Database — Blog posts, users, likes, saved items
+- Storage — User profile images
 
-        ◦ Firebase persistence enabled to view previously loaded content without an internet connection.
+### 🧱 Architecture
+- MVVM (Model-View-ViewModel)
 
-        ◦ Smart network monitoring with "Back Online" notifications.
+### 📚 Key Libraries
+- ViewBinding — Safe view interaction
+- Coroutines — Asynchronous background tasks
+- Glide — Image loading & caching
+- FancyToast & SweetAlert — Custom UI alerts
+- Material Design — Modern responsive UI
 
+---
 
-🛠️ Tech Stack:-
+## 🚀 Getting Started
 
-    • Language: Kotlin
-
-    • Backend: Firebase
-
-        ◦ Authentication: User management & Google Sign-In.
-
-        ◦ Realtime Database: Storing blog posts, user data, likes, and saved items.
-
-        ◦ Storage: Hosting user profile images.
-
-    • Architecture: MVVM (Model-View-ViewModel) patterns.
-
-    • Key Libraries:
-
-        ◦ ViewBinding: For safe and efficient view interaction.
-
-        ◦ Coroutines: For asynchronous background tasks.
-
-        ◦ Glide: For efficient image loading and caching.
-
-        ◦ FancyToast & SweetAlert: For beautiful, custom UI alerts and feedbacks.
-
-        ◦ Material Design: For a modern and responsive user interface.
-
+1. Clone the repository
+```bash
+git clone https://github.com/ayush-anand-sharma/Blog-App.git
