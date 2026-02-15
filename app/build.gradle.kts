@@ -6,7 +6,8 @@ plugins { // Block for applying Gradle plugins.
     alias(libs.plugins.android.application) // Applies the Android application plugin.
     alias(libs.plugins.kotlin.android) // Applies the Kotlin Android plugin.
     alias(libs.plugins.google.gms.google.services) // Applies the Google Services plugin for Firebase.
-    id("kotlin-parcelize") // Applies the Kotlin Parcelize plugin for boilerplate-free Parcelable implementation.
+    id("kotlin-parcelize")
+    alias(libs.plugins.google.firebase.appdistribution) // Applies the Kotlin Parcelize plugin for boilerplate-free Parcelable implementation.
 }
 
 android { // Block for Android specific configurations.
