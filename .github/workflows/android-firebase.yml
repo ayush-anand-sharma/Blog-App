@@ -32,7 +32,8 @@ jobs:
 
       - name: Upload to Firebase App Distribution
         run: |
-          firebase appdistribution:distribute app/build/outputs/apk/release/app-release.apk \
+          firebase appdistribution:distribute app/build/outputs/apk/release/app-release-unsigned.apk \
           --app 1:997871715639:android:8c0d3fac56eff27d9cc6b2 \
           --release-notes "${{ github.event.head_commit.message }}" \
           --token ${{ secrets.FIREBASE_TOKEN }}
+
