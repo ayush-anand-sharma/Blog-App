@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/black"
     android:fitsSystemWindows="true"
-    tools:context=".main.ProfilePage">
+    tools:context=".main.EditProfile">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -20,8 +20,7 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:contentScrim="@android:color/black"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            app:contentScrim="@android:color/black">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -37,24 +36,22 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/back_button"
                     android:src="@drawable/back_icon"
-                    android:tint="@color/white"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="RedundantDescriptionCheck,UseAppTint" />
+                    app:tint="@color/white" />
 
                 <TextView
                     android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed-medium"
-                    android:text="@string/profile"
+                    android:text="@string/edit_profile"
                     android:textColor="#00BCD4"
                     android:textSize="24sp"
                     app:layout_constraintBottom_toBottomOf="@+id/backButton"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/backButton"
-                    tools:ignore="TextContrastCheck" />
+                    app:layout_constraintTop_toTopOf="@+id/backButton" />
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/profile_image"
@@ -69,6 +66,17 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView" />
 
+                <ImageButton
+                    android:id="@+id/edit_profile_image_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/edit_icon_background"
+                    android:contentDescription="@string/edit_profile_image"
+                    android:src="@drawable/edit_icon"
+                    app:layout_constraintBottom_toBottomOf="@+id/profile_image"
+                    app:layout_constraintEnd_toEndOf="@+id/profile_image"
+                    app:tint="@color/white" />
+
                 <EditText
                     android:id="@+id/profile_full_name"
                     android:layout_width="0dp"
@@ -77,20 +85,20 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="32dp"
                     android:autofillHints="name"
-                    android:background="@android:color/transparent"
+                    android:background="@drawable/blue_border_background"
                     android:ems="10"
-                    android:enabled="false"
+                    android:enabled="true"
                     android:fontFamily="sans-serif-light"
                     android:hint="@string/your_name"
                     android:inputType="textPersonName"
                     android:minHeight="48dp"
+                    android:padding="12dp"
                     android:textColor="@android:color/white"
                     android:textColorHint="@android:color/white"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_image"
-                    tools:ignore="VisualLintTextFieldSize" />
+                    app:layout_constraintTop_toBottomOf="@+id/profile_image" />
 
                 <EditText
                     android:id="@+id/profile_email"
@@ -100,128 +108,55 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="32dp"
                     android:autofillHints="emailAddress"
-                    android:background="@android:color/transparent"
+                    android:background="@drawable/blue_border_background"
                     android:ems="10"
-                    android:enabled="false"
+                    android:enabled="true"
                     android:fontFamily="sans-serif-thin"
                     android:hint="@string/your_email"
                     android:inputType="textEmailAddress"
                     android:minHeight="48dp"
+                    android:padding="12dp"
                     android:textColor="@android:color/white"
-                    android:textColorHint="@android:color/white"
+                    android:textColorHint="@android:color/darker_gray"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_full_name"
-                    tools:ignore="VisualLintTextFieldSize" />
+                    app:layout_constraintTop_toBottomOf="@+id/profile_full_name" />
 
                 <TextView
-                    android:id="@+id/member_since_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="16dp"
-                    android:fontFamily="sans-serif-condensed"
-                    android:text="@string/member_since"
-                    android:textColor="@android:color/white"
-                    android:textSize="16sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_email" />
-
-                <TextView
-                    android:id="@+id/member_since_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:fontFamily="sans-serif-light"
-                    android:textColor="@android:color/white"
-                    android:textSize="16sp"
-                    app:layout_constraintBaseline_toBaselineOf="@+id/member_since_label"
-                    app:layout_constraintStart_toEndOf="@+id/member_since_label"
-                    tools:text="2024-01-01" />
-
-                <TextView
-                    android:id="@+id/edit_profile_button"
+                    android:id="@+id/change_password_prompt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="24dp"
-                    android:background="@drawable/blue_border_background"
-                    android:clickable="true"
-                    android:drawablePadding="8dp"
-                    android:focusable="true"
                     android:fontFamily="sans-serif-condensed-medium"
-                    android:gravity="center_vertical"
-                    android:minHeight="48dp"
-                    android:paddingStart="16dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp"
-                    android:text="Edit Profile"
+                    android:text="@string/change_password"
                     android:textColor="@color/blue"
                     android:textSize="16sp"
-                    app:drawableEndCompat="@drawable/edit_icon"
-                    app:drawableTint="@color/blue"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/member_since_label"
-                    tools:ignore="HardcodedText" />
+                    app:layout_constraintTop_toBottomOf="@+id/profile_email" />
 
-                <TextView
-                    android:id="@+id/sign_out_button"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/save_profile_button"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
-                    android:background="@drawable/red_border_background"
-                    android:clickable="true"
-                    android:drawablePadding="8dp"
-                    android:focusable="true"
+                    android:layout_marginTop="16dp"
                     android:fontFamily="sans-serif-condensed-medium"
-                    android:gravity="center_vertical"
-                    android:minHeight="48dp"
-                    android:paddingStart="16dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp"
-                    android:text="Sign Out"
-                    android:textColor="#F44336"
-                    android:textSize="16sp"
-                    app:drawableEndCompat="@drawable/sign_out_icon"
-                    app:layout_constraintBottom_toBottomOf="@+id/edit_profile_button"
+                    android:text="@string/save_profile"
+                    android:textColor="#FF0000"
+                    android:textSize="18sp"
+                    app:strokeColor="#FF0000"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/edit_profile_button"
-                    tools:ignore="HardcodedText" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/change_password_prompt" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tab_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/black"
-            app:tabGravity="fill"
-            app:tabIndicatorColor="#00BCD4"
-            app:tabMode="fixed"
-            app:tabTextColor="@color/white">
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/my_blogs" />
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/liked_blogs" />
-        </com.google.android.material.tabs.TabLayout>
-
     </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <FrameLayout
         android:id="@+id/progressBar"
