@@ -100,28 +100,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/profile_image" />
 
-                <EditText
-                    android:id="@+id/profile_email"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="32dp"
-                    android:autofillHints="emailAddress"
-                    android:background="@drawable/blue_border_background"
-                    android:ems="10"
-                    android:enabled="true"
-                    android:fontFamily="sans-serif-thin"
-                    android:hint="@string/your_email"
-                    android:inputType="textEmailAddress"
-                    android:minHeight="48dp"
-                    android:padding="12dp"
-                    android:textColor="@android:color/white"
-                    android:textColorHint="@android:color/darker_gray"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_full_name" />
-
                 <TextView
                     android:id="@+id/change_password_prompt"
                     android:layout_width="wrap_content"
@@ -133,7 +111,7 @@
                     android:textColor="@color/blue"
                     android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/profile_email" />
+                    app:layout_constraintTop_toBottomOf="@+id/profile_full_name" /> <!-- The top constraint is now linked to profile_full_name after removing the email field. -->
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/save_profile_button"
