@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage", "KDocMissingDocumentation", "ObjectPropertyName", "RemoveRedundantBackticks", "UnusedImport", "UsePropertyAccessSyntax", "SpellCheckingInspection") // Suppresses various lint warnings for the build file
 plugins {
     alias(libs.plugins.android.application) // Applies the Android application plugin
-    alias(libs.plugins.kotlin.android) // Applies the Kotlin Android plugin
     alias(libs.plugins.google.gms.google.services) // Applies the Google Services plugin
     id("kotlin-parcelize") // Applies the Kotlin Parcelize plugin for Parcelable implementation
 }
@@ -30,11 +29,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11 // Sets Java source compatibility to version 11
-        targetCompatibility = JavaVersion.VERSION_11 // Sets Java target compatibility to version 11
-    }
-    kotlinOptions {
-        jvmTarget = "11" // Sets the JVM target for Kotlin compiler to 11
+        sourceCompatibility = JavaVersion.VERSION_21 // Sets Java source compatibility to version 21
+        targetCompatibility = JavaVersion.VERSION_21 // Sets Java target compatibility to version 21
     }
     buildFeatures{
         viewBinding = true // Enables View Binding feature
@@ -60,9 +56,6 @@ dependencies {
     implementation(libs.androidx.activity.ktx) // Activity KTX extensions
     implementation(libs.androidx.fragment.ktx) // Fragment KTX extensions
 
-    // CIRCLE IMAGE VIEW
-    implementation(libs.circleimageview) // Library for displaying circular images
-
     // FIREBASE LIBRARIES
     implementation(libs.firebase.analytics) // Provides Google Analytics for Firebase to track user engagement.
     implementation(libs.firebase.database) // A real-time NoSQL database for syncing data across clients.
@@ -87,4 +80,5 @@ dependencies {
 
     // GLIDE LIBRARY
     implementation(libs.glide) // A powerful image loading and caching library for Android.
+    implementation(libs.circleimageview)
 }

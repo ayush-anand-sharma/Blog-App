@@ -5,10 +5,10 @@
     <string name="like_button">Like button</string>
     <string name="save_button">Save button</string>
     <string name="back_button">Back button</string>
-    <string name="title">Title</string>
-    <string name="name">Name</string>
-    <string name="date">Date</string>
-    <string name="description">Description</string>
+    <string name="title">Exploring the Cosmos</string>
+    <string name="name">Dr. Evelyn Reed</string>
+    <string name="date">October 26, 2023</string>
+    <string name="description">A journey through the stars, from the nearest celestial bodies to the farthest galaxies. We will explore the mysteries of black holes, the beauty of nebulae, and the possibility of life beyond Earth.</string>
     <string name="blog_heading">Please Start Writing Better Git Commits</string>
     <string name="new_blogger">New Blogger</string>
     <string name="blog_date">Jul 29, 2022</string>

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     tools:context=".main.AddArticle">
 
     <ImageView
@@ -11,6 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
+        android:alpha="0.1"
         android:src="@drawable/background_texture"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -29,7 +31,7 @@
         android:src="@drawable/back_icon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/black" />
+        app:tint="@android:color/white" />
 
     <TextView
         android:id="@+id/textView"
@@ -37,7 +39,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/love_ya_like_a_sister"
         android:text="@string/add_article"
-        android:textColor="@color/black"
+        android:textColor="#00BCD4"
         android:textSize="32sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/backButton"
@@ -53,14 +55,14 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:autofillHints="name"
-        android:background="@drawable/background_shape_blue"
+        android:background="@drawable/edit_text_background_dark"
         android:fontFamily="@font/love_ya_like_a_sister"
         android:hint="@string/title"
         android:inputType="text"
         android:minHeight="48dp"
         android:padding="12dp"
-        android:textColor="@color/black"
-        android:textColorHint="@color/black"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
@@ -72,14 +74,14 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:autofillHints=""
-        android:background="@drawable/background_shape_blue"
+        android:background="@drawable/edit_text_background_dark"
         android:fontFamily="@font/love_ya_like_a_sister"
         android:gravity="top"
         android:hint="@string/description"
         android:inputType="textMultiLine"
         android:padding="12dp"
-        android:textColor="@color/black"
-        android:textColorHint="@color/black"
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
         app:layout_constraintBottom_toTopOf="@+id/add_blog_button"
         app:layout_constraintEnd_toEndOf="@+id/blog_title"
         app:layout_constraintStart_toStartOf="@+id/blog_title"
@@ -93,7 +95,7 @@
         android:backgroundTint="@color/blue"
         android:fontFamily="@font/love_ya_like_a_sister"
         android:text="@string/add_article"
-        android:textColor="@color/white"
+        android:textColor="@android:color/white"
         android:textStyle="bold"
         app:cornerRadius="15dp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".main.SavedArticlesActivity">
+    android:background="@android:color/black"
+    tools:context=".main.SavedArticles">
 
     <ImageView
-        android:id="@+id/backgroundImageView"
+        android:id="@+id/imageView6"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:alpha="0.1"
         android:scaleType="centerCrop"
         android:src="@drawable/background_texture"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -19,62 +21,47 @@
         tools:ignore="ContentDescription" />
 
     <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/back_button"
+        android:padding="8dp"
         android:src="@drawable/back_icon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/black" />
+        app:tint="@android:color/white"
+        tools:ignore="TouchTargetSizeCheck" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textView10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/love_ya_like_a_sister"
-        android:text="@string/saved_articles"
-        android:textColor="@color/black"
-        android:textSize="32sp"
+        android:fontFamily="@font/montserrat_semibold"
+        android:text="Saved Articles"
+        android:textColor="#00BCD4"
+        android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/backButton"
+        app:layout_constraintBottom_toBottomOf="@+id/back_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/backButton" />
+        app:layout_constraintTop_toTopOf="@+id/back_button"
+        tools:ignore="HardcodedText" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/saved_articles_recycler_view"
+        android:id="@+id/saved_article_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView10"
         tools:listitem="@layout/blog_item" />
-
-    <FrameLayout
-        android:id="@+id/progressBar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="100dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminateTint="@color/white" />
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

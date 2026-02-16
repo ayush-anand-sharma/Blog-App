@@ -145,19 +145,6 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
                 showToast("Please check your internet connection..", FancyToast.INFO) // Shows info toast
             }
         }
-        
-        // Toggle password visibility
-        binding.showPasswordButton.setOnClickListener { // Sets listener for show password button
-            val passwordEditText = binding.passwordText // Gets password edit text
-            if (passwordEditText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) { // Checks if visible
-                passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD // Hides password
-                binding.showPasswordButton.setImageResource(R.drawable.show_password_icon) // Sets show icon
-            } else { // Executed if hidden
-                passwordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD // Shows password
-                binding.showPasswordButton.setImageResource(R.drawable.hide_password_icon) // Sets hide icon
-            }
-            passwordEditText.setSelection(passwordEditText.text.length) // Moves cursor to end
-        }
 
         // Handle sign out button click
         binding.signOutButton.setOnClickListener { // Sets listener for sign out button

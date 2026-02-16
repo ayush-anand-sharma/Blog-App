@@ -103,7 +103,7 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
                     val isSaved = state?.isSaved ?: false // Gets saved status
                     // ReadMore layout does not seem to have a like count TextView based on previous code, 
                     // but if it did, we would update it here.
-                    
+
                     binding.likeFloatingButton.setImageResource(if (isLiked) R.drawable.red_like_heart_icon else R.drawable.white_and_black_like_heart_icon) // Sets like icon
                     binding.saveFloatingButton.setImageResource(if (isSaved) R.drawable.bookmark_semi_red_icon else R.drawable.bookmark_red_icon) // Sets save icon
                 }

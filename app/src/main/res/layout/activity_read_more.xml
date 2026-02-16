@@ -6,6 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#121212"
     android:fitsSystemWindows="true"
     tools:context=".main.ReadMore">
 
@@ -36,6 +37,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/back_icon"
+                app:tint="@android:color/white"
                 tools:ignore="ImageContrastCheck,RedundantDescriptionCheck" />
 
             <TextView
@@ -44,10 +46,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
-                android:fontFamily="@font/montserrat_semibold"
+                android:fontFamily="sans-serif-condensed-medium"
                 android:text="@string/title"
-                android:textColor="@color/blue"
-                android:textSize="20sp"
+                android:textColor="#00BCD4"
+                android:textSize="24sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/BackImageButton"
                 app:layout_constraintTop_toBottomOf="@+id/BackImageButton"
@@ -76,9 +78,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="7dp"
-                android:fontFamily="@font/montserrat_light"
+                android:fontFamily="sans-serif"
                 android:text="@string/name"
-                android:textColor="@color/black"
+                android:textColor="#E0E0E0"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="@+id/cardView5"
                 app:layout_constraintStart_toEndOf="@+id/cardView5"
@@ -88,9 +90,10 @@
                 android:id="@+id/profileDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/montserrat_medium_italic"
+                android:fontFamily="sans-serif-light"
                 android:text="@string/date"
-                android:textColor="@color/dateColor"
+                android:textStyle="italic"
+                android:textColor="#BDBDBD"
                 app:layout_constraintBottom_toBottomOf="@+id/profileName"
                 app:layout_constraintEnd_toEndOf="@+id/titleText"
                 app:layout_constraintTop_toTopOf="@+id/profileName"
@@ -101,7 +104,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_marginTop="12dp"
-                android:background="?android:attr/listDivider"
+                android:background="#424242"
                 app:layout_constraintEnd_toEndOf="@+id/profileDate"
                 app:layout_constraintStart_toStartOf="@+id/cardView5"
                 app:layout_constraintTop_toBottomOf="@+id/cardView5" />
@@ -112,10 +115,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:fontFamily="@font/montserrat_light"
+                android:fontFamily="sans-serif-light"
                 android:padding="10dp"
                 android:text="@string/description"
-                android:textColor="@color/black"
+                android:lineSpacingExtra="6dp"
+                android:textColor="#BDBDBD"
+                android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="@+id/divider2"
                 app:layout_constraintStart_toStartOf="@+id/divider2"
                 app:layout_constraintTop_toBottomOf="@+id/divider2" />
@@ -144,10 +149,9 @@
         app:backgroundTint="@color/save_fab_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:shapeAppearance="@style/round"
         app:srcCompat="@drawable/bookmark_red_icon"
         app:tint="@color/red"
-        tools:ignore="ClassNameCheck,KeyboardInaccessibleWidget,RedundantDescriptionCheck" />
+        tools:ignore="KeyboardInaccessibleWidget,RedundantDescriptionCheck" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/likeFloatingButton"
@@ -160,9 +164,8 @@
         app:layout_constraintBottom_toTopOf="@+id/saveFloatingButton"
         app:layout_constraintEnd_toEndOf="@+id/saveFloatingButton"
         app:layout_constraintStart_toStartOf="@+id/saveFloatingButton"
-        app:shapeAppearance="@style/round"
         app:srcCompat="@drawable/white_and_black_like_heart_icon"
         app:tint="@android:color/white"
-        tools:ignore="ClassNameCheck,KeyboardInaccessibleWidget,RedundantDescriptionCheck" />
+        tools:ignore="KeyboardInaccessibleWidget,RedundantDescriptionCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
