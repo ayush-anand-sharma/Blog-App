@@ -42,6 +42,14 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides the onCreate method to initialize the activity
         super.onCreate(savedInstanceState) // Calls the superclass implementation of onCreate
+
+        // If the user is offline, show a toast and finish the activity before setting the content view.
+        if (!isNetworkAvailable()) { // Checks if the device has an active network connection.
+            showToast("Please check your internet connection.", FancyToast.INFO) // Shows an informational toast to the user.
+            finish() // Finishes the activity, preventing the user from seeing a page that requires a connection.
+            return // Stops further execution of the onCreate method.
+        }
+
         binding = ActivityUserProfileBinding.inflate(layoutInflater) // Inflates the layout using view binding
         setContentView(binding.root) // Sets the content view to the root of the binding
 
@@ -63,13 +71,9 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
         setupRecyclerView() // Calls the method to set up the RecyclerView
         observeInteractionState() // Calls the method to observe state changes
 
-        // Load user profile and blogs if network is available
-        if (isNetworkAvailable()) { // Checks if the network is available
-            loadUserProfile(userId) // Loads the user's profile information
-            loadUserBlogs(userId) // Loads the user's blogs
-        } else { // Executed if the network is not available
-            showToast("Please check your internet connection..", FancyToast.INFO) // Shows a toast message indicating no internet connection
-        }
+        // Load user profile and blogs
+        loadUserProfile(userId) // Loads the user's profile information
+        loadUserBlogs(userId) // Loads the user's blogs
     }
 
     // Configures the RecyclerView and adapter

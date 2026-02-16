@@ -3,8 +3,11 @@
 package com.ayushcodes.blogapp.register // Defines the package name for this file
 
 // Import necessary Android and library classes
+import android.content.Context
 import android.content.Intent // Imports Intent class for launching activities
 import android.graphics.Bitmap // Imports Bitmap for image handling
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri // Imports Uri for handling image URIs
 import android.os.Bundle // Imports Bundle for passing data between Android components
 import android.provider.MediaStore // Imports MediaStore for accessing media content
@@ -83,78 +86,86 @@ class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inh
 
         // Handle user registration when the register button is clicked
         binding.registerButton.setOnClickListener { // Sets OnClickListener for the register button
-            binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
-            val name = binding.name.text.toString() // Gets the name text
-            val email = binding.email.text.toString() // Gets the email text
-            val password = binding.password.text.toString() // Gets the password text
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
+                val name = binding.name.text.toString() // Gets the name text
+                val email = binding.email.text.toString() // Gets the email text
+                val password = binding.password.text.toString() // Gets the password text
 
-            // Validate that all required fields are filled
-            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) { // Checks if any field is empty
-                binding.progressBar.visibility = View.GONE // Hides the progress bar
-                FancyToast.makeText(this, "Please fill all the details", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
-                return@setOnClickListener // Returns from listener
-            }
-
-            // Create a new user with email and password using Firebase Authentication
-            auth.createUserWithEmailAndPassword(email, password) // Creates user with email and password
-                .addOnCompleteListener(this) { task -> // Adds completion listener
-                    if (task.isSuccessful) { // Checks if registration was successful
-                        val user = auth.currentUser // Gets the current user
-                        user?.let {uid -> // Checks if user is not null
-                            // Update the user's profile with the provided display name
-                            val profileUpdates = UserProfileChangeRequest.Builder() // Builds profile change request
-                                .setDisplayName(name) // Sets the display name
-                                .build() // Builds the request
-                            user.updateProfile(profileUpdates) // Updates the user profile
-
-                            // Check if a profile image has been selected
-                            if (imageUri != null) { // Checks if imageUri is not null
-                                // Upload the selected image to Firebase Storage
-                                val storageRef = storage.reference.child("profile_images/${user.uid}.jpg") // References the storage path for the image
-                                
-                                try { // Starts try block for image processing
-                                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri) // Gets bitmap from URI
-                                    val baos = ByteArrayOutputStream() // Creates ByteArrayOutputStream
-                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos) // Compresses bitmap to JPEG
-                                    val data = baos.toByteArray() // Converts stream to byte array
-                                    
-                                    storageRef.putBytes(data) // Uploads the byte array to storage
-                                        .addOnSuccessListener { // Adds success listener
-                                            // Get the download URL of the uploaded image
-                                            storageRef.downloadUrl.addOnSuccessListener { uri -> // Gets the download URL
-                                                saveUserData(user.uid, name, email, uri.toString()) // Saves user data with image URL
-                                            }
-                                        }
-                                        .addOnFailureListener { // Adds failure listener
-                                            binding.progressBar.visibility = View.GONE // Hides the progress bar
-                                            FancyToast.makeText(this, "Image Upload Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
-                                        }
-                                } catch (e: Exception) { // Catches exceptions during bitmap conversion
-                                    // Fallback if bitmap conversion fails
-                                    storageRef.putFile(imageUri!!) // Uploads the file directly from URI
-                                        .addOnSuccessListener { // Adds success listener
-                                            storageRef.downloadUrl.addOnSuccessListener { uri -> // Gets the download URL
-                                                saveUserData(user.uid, name, email, uri.toString()) // Saves user data with image URL
-                                            }
-                                        }
-                                }
-                            } else { // Executed if no image is selected
-                                // If no image is selected, save user data with an empty image URL
-                                saveUserData(user.uid, name, email, "") // Saves user data with empty image string
-                            }
-                        }
-                    } else { // Executed if registration failed
-                        // Handle registration failure
-                        binding.progressBar.visibility = View.GONE // Hides the progress bar
-                        FancyToast.makeText(this, "Registration Failed: ${task.exception?.message}", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast with message
-                    }
+                // Validate that all required fields are filled
+                if (name.isEmpty() || email.isEmpty() || password.isEmpty()) { // Checks if any field is empty
+                    binding.progressBar.visibility = View.GONE // Hides the progress bar
+                    FancyToast.makeText(this, "Please fill all the details", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                    return@setOnClickListener // Returns from listener
                 }
+
+                // Create a new user with email and password using Firebase Authentication
+                auth.createUserWithEmailAndPassword(email, password) // Creates user with email and password
+                    .addOnCompleteListener(this) { task -> // Adds completion listener
+                        if (task.isSuccessful) { // Checks if registration was successful
+                            val user = auth.currentUser // Gets the current user
+                            user?.let {uid -> // Checks if user is not null
+                                // Update the user's profile with the provided display name
+                                val profileUpdates = UserProfileChangeRequest.Builder() // Builds profile change request
+                                    .setDisplayName(name) // Sets the display name
+                                    .build() // Builds the request
+                                user.updateProfile(profileUpdates) // Updates the user profile
+
+                                // Check if a profile image has been selected
+                                if (imageUri != null) { // Checks if imageUri is not null
+                                    // Upload the selected image to Firebase Storage
+                                    val storageRef = storage.reference.child("profile_images/${user.uid}.jpg") // References the storage path for the image
+                                    
+                                    try { // Starts try block for image processing
+                                        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri) // Gets bitmap from URI
+                                        val baos = ByteArrayOutputStream() // Creates ByteArrayOutputStream
+                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos) // Compresses bitmap to JPEG
+                                        val data = baos.toByteArray() // Converts stream to byte array
+                                        
+                                        storageRef.putBytes(data) // Uploads the byte array to storage
+                                            .addOnSuccessListener { // Adds success listener
+                                                // Get the download URL of the uploaded image
+                                                storageRef.downloadUrl.addOnSuccessListener { uri -> // Gets the download URL
+                                                    saveUserData(user.uid, name, email, uri.toString()) // Saves user data with image URL
+                                                }
+                                            }
+                                            .addOnFailureListener { // Adds failure listener
+                                                binding.progressBar.visibility = View.GONE // Hides the progress bar
+                                                FancyToast.makeText(this, "Image Upload Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                                            }
+                                    } catch (e: Exception) { // Catches exceptions during bitmap conversion
+                                        // Fallback if bitmap conversion fails
+                                        storageRef.putFile(imageUri!!) // Uploads the file directly from URI
+                                            .addOnSuccessListener { // Adds success listener
+                                                storageRef.downloadUrl.addOnSuccessListener { uri -> // Gets the download URL
+                                                    saveUserData(user.uid, name, email, uri.toString()) // Saves user data with image URL
+                                                }
+                                            }
+                                    }
+                                } else { // Executed if no image is selected
+                                    // If no image is selected, save user data with an empty image URL
+                                    saveUserData(user.uid, name, email, "") // Saves user data with empty image string
+                                }
+                            }
+                        } else { // Executed if registration failed
+                            // Handle registration failure
+                            binding.progressBar.visibility = View.GONE // Hides the progress bar
+                            FancyToast.makeText(this, "Registration Failed: ${task.exception?.message}", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast with message
+                        }
+                    }
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
 
         // Navigate to the Log In screen if the user already has an account
         binding.loginHere.setOnClickListener { // Sets OnClickListener for login link
-            startActivity(Intent(this, LogInScreen::class.java)) // Starts LogInScreen activity
-            finish() // Finishes the current activity
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                startActivity(Intent(this, LogInScreen::class.java)) // Starts LogInScreen activity
+                finish() // Finishes the current activity
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
     }
     
@@ -175,5 +186,20 @@ class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inh
                 FancyToast.makeText(this, "Registration Failed: ${it.exception?.message}", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
             }
         }
+    }
+
+    // Checks for network connectivity.
+    private fun isNetworkAvailable(): Boolean { // Defines the isNetworkAvailable method.
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager // Gets the connectivity manager system service.
+        val network = connectivityManager.activeNetwork ?: return false // Gets the currently active network, or returns false if none.
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false // Gets the capabilities of the active network, or returns false if none.
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || // Returns true if the network has WiFi transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || // Or cellular transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) // Or ethernet transport.
+    }
+
+    // Shows a custom toast message.
+    private fun showToast(message: String, type: Int) { // Defines the showToast method.
+        FancyToast.makeText(this, message, FancyToast.LENGTH_SHORT, type, R.mipmap.blog_app_icon_round, false).show() // Creates and shows a FancyToast.
     }
 }

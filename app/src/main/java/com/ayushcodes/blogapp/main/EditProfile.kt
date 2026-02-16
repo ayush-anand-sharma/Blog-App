@@ -48,6 +48,14 @@ class EditProfile : AppCompatActivity() { // Defines the EditProfile class, whic
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides the onCreate method, which is called when the activity is first created.
         super.onCreate(savedInstanceState) // Calls the superclass's implementation of onCreate.
         enableEdgeToEdge() // Enables edge-to-edge display for the activity, allowing content to draw under system bars.
+
+        // If the user is offline, show a toast and finish the activity before setting the content view.
+        if (!isNetworkAvailable()) { // Checks if the device has an active network connection.
+            showToast("Please check your internet connection.", FancyToast.INFO) // Shows an informational toast to the user.
+            finish() // Finishes the activity, preventing the user from seeing an empty page.
+            return // Stops further execution of the onCreate method.
+        }
+
         binding = ActivityEditProfileBinding.inflate(layoutInflater) // Inflates the layout and initializes the binding object.
         setContentView(binding.root) // Sets the activity's content view to the root of the inflated layout.
 

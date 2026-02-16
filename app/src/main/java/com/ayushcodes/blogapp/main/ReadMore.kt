@@ -43,6 +43,14 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides onCreate method
         super.onCreate(savedInstanceState) // Calls superclass onCreate
+
+        // If the user is offline, show a toast and finish the activity before setting the content view.
+        if (!isNetworkAvailable()) { // Checks if the device has an active network connection.
+            showToast("Please check your internet connection.", FancyToast.INFO) // Shows an informational toast to the user.
+            finish() // Finishes the activity, preventing the user from seeing an empty or partially loaded page.
+            return // Stops further execution of the onCreate method.
+        }
+
         binding = ActivityReadMoreBinding.inflate(layoutInflater) // Inflates layout
         enableEdgeToEdge() // Enables edge-to-edge display
         setContentView(binding.root) // Sets content view

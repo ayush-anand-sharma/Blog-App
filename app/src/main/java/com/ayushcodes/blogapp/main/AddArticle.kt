@@ -39,6 +39,14 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides onCreate method
         super.onCreate(savedInstanceState) // Calls superclass onCreate
         enableEdgeToEdge() // Enables edge-to-edge display
+
+        // If the user is offline, show a toast and finish the activity before setting the content view.
+        if (!isNetworkAvailable()) { // Checks if the device has an active network connection.
+            showToast("Please check your internet connection.", FancyToast.INFO) // Shows an informational toast to the user.
+            finish() // Finishes the activity, preventing the user from seeing a page that requires a connection.
+            return // Stops further execution of the onCreate method.
+        }
+
         setContentView(binding.root) // Sets content view using binding
 
         // Set click listener for the back button to close the current activity
@@ -46,11 +54,7 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
 
         // Set click listener for the add blog button, checking for network availability
         binding.addBlogButton.setOnClickListener { // Sets OnClickListener for add blog button
-            if (isNetworkAvailable()) { // Checks if network is available
-                addBlog() // Calls addBlog function
-            } else { // Executed if network is unavailable
-                showToast("Please check your internet connection..", FancyToast.ERROR) // Shows error toast
-            }
+            addBlog() // Calls addBlog function
         }
     }
 
@@ -129,7 +133,7 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
         )
 
         // Define paths for simultaneous updates in the database
-        val childUpdates = hashMapOf<String, Any>( // Creates map for updates
+        val childUpdates = hashMapOf<String, Any>(
             "/blogs/$newBlogKey" to blogItem, // Update path for global blogs
             "/users/$userId/Blogs/$newBlogKey" to blogItem // Update path for user's blogs
         )

@@ -3,9 +3,12 @@
 package com.ayushcodes.blogapp.register // Defines the package name for this file
 
 // Import necessary Android and library classes
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -71,19 +74,31 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
 
         // Set up click listener for Google Sign-In button
         binding.googleButton.setOnClickListener { // Sets OnClickListener for Google sign-in button
-            binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
-            val signInIntent = googleSignInClient.signInIntent // Gets the sign-in intent
-            launcher.launch(signInIntent) // Launches the sign-in intent
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
+                val signInIntent = googleSignInClient.signInIntent // Gets the sign-in intent
+                launcher.launch(signInIntent) // Launches the sign-in intent
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
 
         // Set up click listener for Email Login button
         binding.loginEmail.setOnClickListener { // Sets OnClickListener for email login button
-            startActivity(Intent(this, LogInScreen::class.java)) // Starts LogInScreen activity
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                startActivity(Intent(this, LogInScreen::class.java)) // Starts LogInScreen activity
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
 
         // Set up click listener for Register button
         binding.registerEmail.setOnClickListener { // Sets OnClickListener for register button
-            startActivity(Intent(this, RegisterPage::class.java)) // Starts RegisterPage activity
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                startActivity(Intent(this, RegisterPage::class.java)) // Starts RegisterPage activity
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
 
         // Handle back button press to show exit confirmation dialog
@@ -205,5 +220,20 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
             startActivity(Intent(this, HomePage::class.java)) // Starts HomePage activity
             finish() // Finishes the current activity
         }
+    }
+
+    // Checks for network connectivity.
+    private fun isNetworkAvailable(): Boolean { // Defines the isNetworkAvailable method.
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager // Gets the connectivity manager system service.
+        val network = connectivityManager.activeNetwork ?: return false // Gets the currently active network, or returns false if none.
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false // Gets the capabilities of the active network, or returns false if none.
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || // Returns true if the network has WiFi transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || // Or cellular transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) // Or ethernet transport.
+    }
+
+    // Shows a custom toast message.
+    private fun showToast(message: String, type: Int) { // Defines the showToast method.
+        FancyToast.makeText(this, message, FancyToast.LENGTH_SHORT, type, R.mipmap.blog_app_icon_round, false).show() // Creates and shows a FancyToast.
     }
 }

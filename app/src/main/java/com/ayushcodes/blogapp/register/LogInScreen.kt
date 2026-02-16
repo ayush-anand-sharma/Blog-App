@@ -3,9 +3,12 @@
 package com.ayushcodes.blogapp.register // Defines the package name for this file
 
 // Import necessary Android and library classes
+import android.content.Context
 import android.content.Intent // Imports Intent class for launching activities
 import android.graphics.Bitmap // Imports Bitmap class for image manipulation
 import android.graphics.drawable.Drawable // Imports Drawable class for image resources
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle // Imports Bundle for passing data between Android components
 import android.text.InputType // Imports InputType for configuring EditText input types
 import android.view.View // Imports View class for UI elements
@@ -89,36 +92,44 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
 
         // Handle login button click.
         binding.loginButton.setOnClickListener { // Sets OnClickListener for login button
-            binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
-            val email = binding.email.text.toString() // Gets the email text
-            val password = binding.password.text.toString() // Gets the password text
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
+                val email = binding.email.text.toString() // Gets the email text
+                val password = binding.password.text.toString() // Gets the password text
 
-            // Validate email and password inputs.
-            if (email.isEmpty() || password.isEmpty()) { // Checks if email or password is empty
-                binding.progressBar.visibility = View.GONE // Hides the progress bar
-                FancyToast.makeText(this, "Please fill all the details", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
-                return@setOnClickListener // Returns from listener
-            }
-
-            // Attempt to sign in with email and password using Firebase Auth.
-            auth.signInWithEmailAndPassword(email, password) // Signs in with email and password
-                .addOnCompleteListener(this) { task -> // Adds completion listener
+                // Validate email and password inputs.
+                if (email.isEmpty() || password.isEmpty()) { // Checks if email or password is empty
                     binding.progressBar.visibility = View.GONE // Hides the progress bar
-                    if (task.isSuccessful) { // Checks if sign-in was successful
-                        FancyToast.makeText(this, "Login Successful", FancyToast.LENGTH_SHORT, FancyToast.SUCCESS, R.mipmap.blog_app_icon_round, false).show() // Shows success toast
-                        startActivity(Intent(this, HomePage::class.java)) // Starts HomePage activity
-                        finishAffinity() // Finishes all activities in the task
-                    } else { // Executed if sign-in failed
-                        FancyToast.makeText(this, "Your Email Or Password is Incorrect..", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
-                    }
+                    FancyToast.makeText(this, "Please fill all the details", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                    return@setOnClickListener // Returns from listener
                 }
+
+                // Attempt to sign in with email and password using Firebase Auth.
+                auth.signInWithEmailAndPassword(email, password) // Signs in with email and password
+                    .addOnCompleteListener(this) { task -> // Adds completion listener
+                        binding.progressBar.visibility = View.GONE // Hides the progress bar
+                        if (task.isSuccessful) { // Checks if sign-in was successful
+                            FancyToast.makeText(this, "Login Successful", FancyToast.LENGTH_SHORT, FancyToast.SUCCESS, R.mipmap.blog_app_icon_round, false).show() // Shows success toast
+                            startActivity(Intent(this, HomePage::class.java)) // Starts HomePage activity
+                            finishAffinity() // Finishes all activities in the task
+                        } else { // Executed if sign-in failed
+                            FancyToast.makeText(this, "Your Email Or Password is Incorrect..", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                        }
+                    }
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
 
         // Handle Google Sign-In button click.
         binding.googleButton.setOnClickListener { // Sets OnClickListener for Google sign-in button
-            binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
-            val signInIntent = googleSignInClient.signInIntent // Gets the sign-in intent
-            launcher.launch(signInIntent) // Launches the sign-in intent
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
+                val signInIntent = googleSignInClient.signInIntent // Gets the sign-in intent
+                launcher.launch(signInIntent) // Launches the sign-in intent
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
 
         // Navigate to the Registration page.
@@ -129,7 +140,11 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
 
         // Navigate to the Forgot Password page.
         binding.forgotPassword.setOnClickListener { // Sets OnClickListener for forgot password link
-            startActivity(Intent(this, ForgotPassword::class.java)) // Starts ForgotPassword activity
+            if (isNetworkAvailable()) { // Checks for a network connection.
+                startActivity(Intent(this, ForgotPassword::class.java)) // Starts ForgotPassword activity
+            } else { // If offline.
+                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+            }
         }
     }
 
@@ -225,5 +240,20 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
     private fun handleSignInFailure() { // Defines failure handling function
         binding.progressBar.visibility = View.GONE // Hides progress bar
         FancyToast.makeText(this, "Google Sign-In Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+    }
+
+    // Checks for network connectivity.
+    private fun isNetworkAvailable(): Boolean { // Defines the isNetworkAvailable method.
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager // Gets the connectivity manager system service.
+        val network = connectivityManager.activeNetwork ?: return false // Gets the currently active network, or returns false if none.
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false // Gets the capabilities of the active network, or returns false if none.
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || // Returns true if the network has WiFi transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || // Or cellular transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) // Or ethernet transport.
+    }
+
+    // Shows a custom toast message.
+    private fun showToast(message: String, type: Int) { // Defines the showToast method.
+        FancyToast.makeText(this, message, FancyToast.LENGTH_SHORT, type, R.mipmap.blog_app_icon_round, false).show() // Creates and shows a FancyToast.
     }
 }

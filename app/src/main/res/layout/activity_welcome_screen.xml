@@ -5,8 +5,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:ignore="All"
-    tools:context=".register.WelcomeScreen">
+    android:background="@color/dark_grey"
+    tools:context=".register.WelcomeScreen"
+    tools:ignore="All">
 
     <ImageView
         android:id="@+id/backgroundImageView"
@@ -16,8 +17,10 @@
         android:src="@drawable/background_texture"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -39,7 +42,7 @@
         android:fontFamily="@font/love_ya_like_a_sister"
         android:text="Welcome To\nBlog App"
         android:textAlignment="center"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="32sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@+id/imageView"
@@ -127,8 +130,8 @@
         android:layout_height="match_parent"
         android:background="#80000000"
         android:clickable="true"
-        android:focusable="true"
         android:elevation="100dp"
+        android:focusable="true"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -141,5 +144,18 @@
             android:layout_gravity="center"
             android:indeterminateTint="@color/white" />
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/love_ya_like_a_sister"
+        android:text="Design By Ayush"
+        android:textColor="@color/red"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/backgroundImageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/register_email" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

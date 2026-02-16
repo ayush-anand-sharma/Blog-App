@@ -46,6 +46,14 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides onCreate method
         super.onCreate(savedInstanceState) // Calls superclass onCreate
         enableEdgeToEdge() // Enables edge-to-edge display
+
+        // If the user is offline, show a toast and finish the activity before setting the content view.
+        if (!isNetworkAvailable()) { // Checks if the device has an active network connection.
+            showToast("Please check your internet connection.", FancyToast.INFO) // Shows an informational toast to the user.
+            finish() // Finishes the activity, preventing the user from seeing an empty page.
+            return // Stops further execution of the onCreate method.
+        }
+
         binding = ActivityProfilePageBinding.inflate(layoutInflater) // Inflates layout
         setContentView(binding.root) // Sets content view
 

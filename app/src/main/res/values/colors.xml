@@ -12,4 +12,5 @@
     <color name="dateColor">#C8C8C8</color>
     <color name="like_fab_background">#000000</color>
     <color name="save_fab_background">#000000</color>
+    <color name="dark_grey">#212121</color>
 </resources>
