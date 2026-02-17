@@ -20,6 +20,7 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
     private val onReadMoreClick: (BlogItemModel) -> Unit, // Lambda callback for "Read More" click
     private val onLikeClick: (BlogItemModel) -> Unit, // Lambda callback for "Like" button click
     private val onSaveClick: (BlogItemModel) -> Unit, // Lambda callback for "Save" button click
+    private val onEditClick: ((BlogItemModel) -> Unit)? = null, // EDITED: Optional lambda callback for "Edit" button click
     private val onDeleteClick: ((BlogItemModel) -> Unit)? = null // Optional lambda callback for "Delete" button click
 ) : ListAdapter<BlogItemModel, BlogAdapter.BlogViewHolder>(BlogDiffCallback()) { // Inherits ListAdapter with BlogViewHolder and DiffCallback
 
@@ -62,7 +63,7 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
                 userName.text = blogItem.fullName // Sets the user name text
                 date.text = blogItem.date // Sets the date text
                 blogPost.text = blogItem.blogPost // Sets the blog post text
-                
+
                 Glide.with(profile.context) // Initiates Glide with the profile view's context
                     .load(blogItem.profileImage) // Loads the profile image URL
                     .apply(RequestOptions.circleCropTransform()) // Applies a circle crop transformation
@@ -71,7 +72,7 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
                     .into(profile) // Loads the image into the profile ImageView
 
                 readMoreButton.setOnClickListener { onReadMoreClick(blogItem) } // Sets click listener for "Read More"
-                
+
                 // Profile click listeners (kept from original)
                 val context = root.context // Gets context from the root view
                 val profileClickListener = View.OnClickListener { // Creates a common click listener for profile
@@ -87,11 +88,13 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
                 profile.setOnClickListener(profileClickListener) // Sets listener on profile image
                 userName.setOnClickListener(profileClickListener) // Sets listener on user name
 
-                if (onDeleteClick != null && blogItem.userId == currentUserId) { // Checks if delete action is available and user owns the post
-                    deleteButton.visibility = View.VISIBLE // Makes delete button visible
-                    deleteButton.setOnClickListener { onDeleteClick.invoke(blogItem) } // Sets click listener for delete button
-                } else { // Executed if delete is not allowed
-                    deleteButton.visibility = View.GONE // Hides delete button
+                val isAuthor = blogItem.userId == currentUserId // Checks if the current user is the author of the blog post
+                if (isAuthor && onEditClick != null && onDeleteClick != null) { // If the user is the author and click listeners are provided
+                    authorControls.visibility = View.VISIBLE // Show the author controls (edit and delete buttons)
+                    editButton.setOnClickListener { onEditClick.invoke(blogItem) } // Set the click listener for the edit button
+                    deleteButton.setOnClickListener { onDeleteClick.invoke(blogItem) } // Set the click listener for the delete button
+                } else { // If the user is not the author or no click listeners are provided
+                    authorControls.visibility = View.GONE // Hide the author controls
                 }
 
                 likeButton.setOnClickListener { onLikeClick(blogItem) } // Sets click listener for like button

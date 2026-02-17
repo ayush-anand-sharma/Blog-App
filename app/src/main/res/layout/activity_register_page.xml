@@ -206,7 +206,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="30dp"
         android:fontFamily="@font/love_ya_like_a_sister"
         android:text="Already Have An Account ? Login Here"
         android:textColor="@color/blue"

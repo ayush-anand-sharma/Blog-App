@@ -31,6 +31,9 @@
             android:name=".main.AddArticle"
             android:exported="false" />
         <activity
+            android:name=".main.EditBlogActivity"
+            android:exported="false" />
+        <activity
             android:name=".main.HomePage"
             android:exported="true" />
         <activity

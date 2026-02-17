@@ -16,6 +16,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog // Imports SweetAlertDialog for nic
 import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
 import com.ayushcodes.blogapp.adapter.BlogAdapter // Imports the custom adapter for the blog list
 import com.ayushcodes.blogapp.databinding.FragmentMyBlogsBinding // Imports the generated binding class for the layout
+import com.ayushcodes.blogapp.main.EditBlogActivity // EDITED: Imports EditBlogActivity for handling blog edits.
 import com.ayushcodes.blogapp.main.ReadMore // Imports ReadMore activity
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports the data model for blog items
 import com.ayushcodes.blogapp.repository.BlogRepository // Imports the repository for data operations
@@ -44,7 +45,7 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
     override fun onCreateView( // Overrides onCreateView method
         inflater: LayoutInflater, // Inflater to inflate layout
         container: ViewGroup?, // Parent view group
-        savedInstanceState: Bundle? // Saved state bundle
+        savedInstanceState: Bundle?
     ): View { // Returns the View
         // Inflate the layout for this fragment
         binding = FragmentMyBlogsBinding.inflate(inflater, container, false) // Inflates layout using binding
@@ -53,7 +54,7 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
 
     // Called immediately after onCreateView has returned, but before any saved state has been restored in to the view
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) { // Overrides onViewCreated method
-        super.onViewCreated(view, savedInstanceState) // Calls superclass onViewCreated
+        super.onViewCreated(view, savedInstanceState)
 
         // Initialize Firebase instances
         auth = FirebaseAuth.getInstance() // Gets FirebaseAuth instance
@@ -79,6 +80,11 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
                 } else { // Executed if logged in
                     BlogRepository.toggleSave(blogItem.blogId ?: "", blogItem) // Toggles save
                 }
+            },
+            onEditClick = { blogItem -> // EDITED: Adds a click listener for the edit button.
+                val intent = Intent(requireContext(), EditBlogActivity::class.java) // EDITED: Creates an intent to start the EditBlogActivity.
+                intent.putExtra("blogItem", blogItem) // EDITED: Passes the selected blog item to the EditBlogActivity.
+                startActivity(intent) // EDITED: Starts the EditBlogActivity.
             },
             onDeleteClick = { blogItem -> // Callback for delete click
                 showDeleteConfirmation(blogItem) // Shows delete confirmation dialog
