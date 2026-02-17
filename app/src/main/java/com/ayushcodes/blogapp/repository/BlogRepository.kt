@@ -74,12 +74,13 @@ object BlogRepository { // Defines BlogRepository singleton object
                 // otherwise fallback to blog data
                 val isLiked = existingState?.isLiked ?: (userId != null && blog.likes?.containsKey(userId) == true) // Determines isLiked status
                 val isSaved = existingState?.isSaved ?: false  // Determines isSaved status
-                
+                val likeCount = existingState?.likeCount ?: blog.likeCount // EDITED: Use existing like count if available to prevent overwriting with stale data.
+
                 newState[blogId] = PostInteractionState( // Creates new PostInteractionState
                     blogId = blogId, // Sets blog ID
                     isLiked = isLiked, // Sets isLiked
                     isSaved = isSaved, // Sets isSaved
-                    likeCount = blog.likeCount // Sets likeCount
+                    likeCount = likeCount // Sets likeCount
                 )
                 
                 // Ensure we listen to like count updates for this blog if not already

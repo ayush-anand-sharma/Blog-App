@@ -8,7 +8,6 @@ import android.net.NetworkCapabilities // Imports NetworkCapabilities to check n
 import android.os.Build // Imports Build class for version checking
 import android.os.Bundle // Imports Bundle to pass data between components
 import androidx.activity.enableEdgeToEdge // Imports enableEdgeToEdge for edge-to-edge display
-import androidx.activity.viewModels // Imports viewModels for ViewModel delegation
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as base class
 import androidx.core.view.ViewCompat // Imports ViewCompat for compatibility
 import androidx.core.view.WindowInsetsCompat // Imports WindowInsetsCompat for window insets
@@ -18,7 +17,7 @@ import androidx.lifecycle.repeatOnLifecycle // Imports repeatOnLifecycle for lif
 import com.ayushcodes.blogapp.R // Imports R class for resources
 import com.ayushcodes.blogapp.databinding.ActivityReadMoreBinding // Imports generated binding class
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports BlogItemModel data class
-import com.ayushcodes.blogapp.viewmodel.BlogViewModel // Imports BlogViewModel class
+import com.ayushcodes.blogapp.repository.BlogRepository
 import com.bumptech.glide.Glide // Imports Glide for image loading
 import com.bumptech.glide.request.RequestOptions // Imports RequestOptions for Glide
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for authentication
@@ -30,13 +29,10 @@ import kotlinx.coroutines.launch // Imports launch for starting coroutines
 class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from AppCompatActivity
     // Lazily initialize view binding for the activity layout
     private lateinit var binding: ActivityReadMoreBinding // Declares binding variable
-    
-    // ViewModel to observe and update global state
-    private val viewModel: BlogViewModel by viewModels() // Initializes BlogViewModel using delegate
-    
+
     // Current authenticated user
     private val currentUser = FirebaseAuth.getInstance().currentUser // Gets current user
-    
+
     // The blog item to display details for
     private var blogItem: BlogItemModel? = null // Declares blogItem variable, nullable
 
@@ -81,9 +77,9 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
             finish() // Finishes activity
             return // Returns
         }
-        
+
         // Initialize state in ViewModel (in case it wasn't already)
-        viewModel.initializeState(listOf(blogItem!!)) // Initializes ViewModel state
+        BlogRepository.initializeState(listOf(blogItem!!)) // Initializes ViewModel state
 
         // Bind the blog data to the UI elements
         binding.titleText.text = blogItem!!.heading // Sets title text
@@ -105,15 +101,15 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
         // Observe global interaction state
         lifecycleScope.launch { // Launches coroutine
             repeatOnLifecycle(Lifecycle.State.STARTED) { // Repeats on started state
-                viewModel.interactionState.collect { stateMap -> // Collects interaction state map
+                BlogRepository.interactionState.collect { stateMap -> // Collects interaction state map
                     val state = stateMap[blogId] // Gets state for this blog
-                    val isLiked = state?.isLiked ?: false // Gets liked status
-                    val isSaved = state?.isSaved ?: false // Gets saved status
-                    // ReadMore layout does not seem to have a like count TextView based on previous code, 
-                    // but if it did, we would update it here.
+                    if (state != null) {
+                        val isLiked = state.isLiked
+                        val isSaved = state.isSaved
 
-                    binding.likeFloatingButton.setImageResource(if (isLiked) R.drawable.red_like_heart_icon else R.drawable.white_and_black_like_heart_icon) // Sets like icon
-                    binding.saveFloatingButton.setImageResource(if (isSaved) R.drawable.bookmark_semi_red_icon else R.drawable.bookmark_red_icon) // Sets save icon
+                        binding.likeFloatingButton.setImageResource(if (isLiked) R.drawable.red_like_heart_icon else R.drawable.white_and_black_like_heart_icon) // Sets like icon
+                        binding.saveFloatingButton.setImageResource(if (isSaved) R.drawable.bookmark_semi_red_icon else R.drawable.bookmark_red_icon) // Sets save icon
+                    }
                 }
             }
         }
@@ -128,7 +124,7 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
                 showToast("Please check your internet connection..", FancyToast.INFO) // Shows info toast
                 return@setOnClickListener // Returns
             }
-            viewModel.toggleLike(blogItem!!) // Toggles like in ViewModel
+            BlogRepository.toggleLike(blogItem!!.blogId!!, blogItem!!) // Toggles like in ViewModel
         }
 
         binding.saveFloatingButton.setOnClickListener { // Sets listener for save button
@@ -140,7 +136,7 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
                 showToast("Please check your internet connection..", FancyToast.INFO) // Shows info toast
                 return@setOnClickListener // Returns
             }
-            viewModel.toggleSave(blogItem!!) // Toggles save in ViewModel
+            BlogRepository.toggleSave(blogItem!!.blogId!!, blogItem!!) // Toggles save in ViewModel
         }
     }
 
