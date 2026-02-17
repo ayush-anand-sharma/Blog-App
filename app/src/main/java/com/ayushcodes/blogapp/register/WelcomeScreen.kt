@@ -119,6 +119,16 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
             }
         })
     }
+    
+    override fun onStart() {
+        super.onStart()
+        // Check if user is signed in (non-null) and update UI accordingly.
+        val currentUser = auth.currentUser // Get the current user from Firebase Authentication.
+        if (currentUser != null) { // If a user is currently signed in.
+            startActivity(Intent(this, HomePage::class.java)) // Navigate to the HomePage.
+            finish() // Finish WelcomeScreen to prevent user from going back to it.
+        }
+    }
 
     // Activity Result Launcher for Google Sign-In intent
     private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { // Registers activity result callback
@@ -211,15 +221,6 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
     private fun handleSignInFailure() { // Defines failure handling function
         binding.progressBar.visibility = View.GONE // Hides progress bar
         FancyToast.makeText(this, "Google Sign-In Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
-    }
-
-    // Checks if the user is already signed in on start
-    override fun onStart() { // Overrides onStart method
-        super.onStart() // Calls superclass onStart
-        if (auth.currentUser != null) { // Checks if current user is not null
-            startActivity(Intent(this, HomePage::class.java)) // Starts HomePage activity
-            finish() // Finishes the current activity
-        }
     }
 
     // Checks for network connectivity.

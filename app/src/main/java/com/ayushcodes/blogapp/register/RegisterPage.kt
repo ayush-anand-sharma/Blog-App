@@ -16,6 +16,7 @@ import android.view.View // Imports View class for UI elements
 import androidx.activity.result.contract.ActivityResultContracts // Imports ActivityResultContracts for handling activity results
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as the base class for activities
 import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
+import com.ayushcodes.blogapp.activities.CropperActivity
 import com.ayushcodes.blogapp.databinding.ActivityRegisterPageBinding // Imports the generated binding class for the layout
 import com.ayushcodes.blogapp.main.HomePage // Imports the HomePage activity
 import com.ayushcodes.blogapp.model.UserData // Imports the UserData model class
@@ -31,10 +32,7 @@ import java.util.Locale // Imports Locale class
 
 // Activity responsible for handling user registration logic, including Firebase Auth, Realtime Database, and Storage interactions.
 class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inheriting from AppCompatActivity
-    // Lazily initialize view binding for the activity layout
-    private val binding: ActivityRegisterPageBinding by lazy { // Declares binding variable using lazy initialization
-        ActivityRegisterPageBinding.inflate(layoutInflater) // Inflates the layout
-    }
+    private lateinit var binding: ActivityRegisterPageBinding // Declares binding variable
     // Firebase service instances
     private lateinit var auth: FirebaseAuth // Declares FirebaseAuth instance
     private lateinit var database: FirebaseDatabase // Declares FirebaseDatabase instance
@@ -43,17 +41,29 @@ class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inh
     private var imageUri: Uri? = null // Variable to hold the URI of the selected image, initially null
 
     // Register for activity result to get content (image) from the device storage
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { // Registers activity result launcher for getting content
-        uri -> // Lambda parameter for the returned URI
-        if (uri != null) { // Checks if the URI is not null
-            binding.userProfile.setImageURI(uri) // Sets the selected image to the ImageView
-            imageUri = uri // Updates the imageUri variable
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri -> // Registers activity result launcher for getting content
+        uri?.let { // Checks if the URI is not null
+            val intent = Intent(this, CropperActivity::class.java) // Create an Intent to start CropperActivity
+            intent.data = it // Set the image URI as data for the intent
+            cropImage.launch(intent) // Launch the CropperActivity to crop the image
+        }
+    }
+
+    // Register for activity result to get the cropped image
+    private val cropImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> // Registers activity result launcher for getting cropped image
+        if (result.resultCode == RESULT_OK) { // Check if the result is OK
+            val uri = result.data?.data // Get the cropped image URI from the result
+            uri?.let { // If the URI is not null
+                binding.userProfile.setImageURI(it) // Set the cropped image to the ImageView
+                imageUri = it // Update the imageUri variable
+            }
         }
     }
 
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides the onCreate method
         super.onCreate(savedInstanceState) // Calls superclass onCreate
+        binding = ActivityRegisterPageBinding.inflate(layoutInflater) // Inflates the layout
         setContentView(binding.root) // Sets content view using binding
 
         // Initialize Firebase instances

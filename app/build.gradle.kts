@@ -81,4 +81,7 @@ dependencies {
     // GLIDE LIBRARY
     implementation(libs.glide) // A powerful image loading and caching library for Android.
     implementation(libs.circleimageview)
+    
+    // uCrop
+    implementation("com.github.yalantis:ucrop:2.2.8") // A library for image cropping.
 }

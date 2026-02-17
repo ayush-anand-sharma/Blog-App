@@ -147,6 +147,16 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
             }
         }
     }
+    
+    override fun onStart() {
+        super.onStart()
+        // Check if user is signed in (non-null) and update UI accordingly.
+        val currentUser = auth.currentUser // Get the current user from Firebase Authentication.
+        if (currentUser != null) { // If a user is currently signed in.
+            startActivity(Intent(this, HomePage::class.java)) // Navigate to the HomePage.
+            finish() // Finish WelcomeScreen to prevent user from going back to it.
+        }
+    }
 
     // Register a callback for the Google Sign-In activity result.
     private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { // Registers activity result callback

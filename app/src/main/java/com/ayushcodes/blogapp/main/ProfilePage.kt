@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.ayushcodes.blogapp.main // Defines the package name for this file
 
 // Import necessary Android and library classes
@@ -18,6 +20,9 @@ import com.ayushcodes.blogapp.main.adapters.ViewPagerAdapter // Imports ViewPage
 import com.ayushcodes.blogapp.register.WelcomeScreen // Imports WelcomeScreen activity
 import com.bumptech.glide.Glide // Imports Glide for image loading
 import com.bumptech.glide.request.RequestOptions // Imports RequestOptions for Glide
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.tabs.TabLayoutMediator // Imports TabLayoutMediator for tabs
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for authentication
 import com.google.firebase.database.DataSnapshot // Imports DataSnapshot for reading data
@@ -33,7 +38,6 @@ import java.util.Locale // Imports Locale class
 @Suppress("DEPRECATION") // Suppresses deprecation warnings
 class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheriting from AppCompatActivity
 
-    // Lazily initialize view binding for the activity layout
     private lateinit var binding: ActivityProfilePageBinding // Declares binding variable
 
     // Firebase Authentication instance to manage user login
@@ -41,11 +45,16 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
 
     // Firebase Database instance for user data operations
     private lateinit var database: FirebaseDatabase // Declares FirebaseDatabase instance
+    
+    // Google Sign-In client.
+    private lateinit var googleSignInClient: GoogleSignInClient // Declares GoogleSignInClient instance
 
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides onCreate method
         super.onCreate(savedInstanceState) // Calls superclass onCreate
         enableEdgeToEdge() // Enables edge-to-edge display
+        binding = ActivityProfilePageBinding.inflate(layoutInflater) // Inflates layout
+        setContentView(binding.root) // Sets content view
 
         // If the user is offline, show a toast and finish the activity before setting the content view.
         if (!isNetworkAvailable()) { // Checks if the device has an active network connection.
@@ -53,9 +62,6 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
             finish() // Finishes the activity, preventing the user from seeing an empty page.
             return // Stops further execution of the onCreate method.
         }
-
-        binding = ActivityProfilePageBinding.inflate(layoutInflater) // Inflates layout
-        setContentView(binding.root) // Sets content view
 
         // Adjust padding to accommodate system bars
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets -> // Sets window insets listener
@@ -67,6 +73,13 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
         // Initialize Firebase instances
         auth = FirebaseAuth.getInstance() // Gets FirebaseAuth instance
         database = FirebaseDatabase.getInstance() // Gets FirebaseDatabase instance
+        
+        // Configure Google Sign-In options.
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) // Builds GoogleSignInOptions
+            .requestIdToken(getString(R.string.default_web_client_id)) // Requests ID token using web client ID
+            .requestEmail() // Requests user email
+            .build() // Builds the options
+        googleSignInClient = GoogleSignIn.getClient(this, gso) // Gets the GoogleSignInClient
 
         // Set up tabs for viewing user's blogs and liked blogs
         setupTabs() // Calls setupTabs method
@@ -116,12 +129,14 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
             .setConfirmClickListener { sDialog -> // Sets confirm button listener
                 showToast("Signing Out...", FancyToast.INFO) // Shows toast message for signing out
                 auth.signOut() // Signs out the user from Firebase
-                val intent = Intent(this, WelcomeScreen::class.java) // Creates intent for WelcomeScreen
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears task stack
-                startActivity(intent) // Starts WelcomeScreen activity
-                showToast("Signed Out...", FancyToast.SUCCESS) // Shows toast message for signed out
-                sDialog.dismissWithAnimation() // Dismisses the dialog
-                finish() // Finishes the current activity
+                googleSignInClient.signOut().addOnCompleteListener { // sign out from google
+                    val intent = Intent(this, WelcomeScreen::class.java) // Creates intent for WelcomeScreen
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears task stack
+                    startActivity(intent) // Starts WelcomeScreen activity
+                    showToast("Signed Out...", FancyToast.SUCCESS) // Shows toast message for signed out
+                    sDialog.dismissWithAnimation() // Dismisses the dialog
+                    finish() // Finishes the current activity
+                }
             }
             .setCancelText("No") // Sets cancel button text
             .setCancelClickListener { it.dismissWithAnimation() } // Sets cancel button listener

@@ -132,8 +132,10 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
                 isOffline = true // Sets the offline flag to true.
             } // Closes the inner if block.
         } else { // If the network is available.
-            isOffline = false // We are online
-            isFirstLoad = true // Reset
+            if (isOffline) { // Checks if the device was previously offline.
+                showToast("Feed Updated", FancyToast.SUCCESS) // Shows a success toast.
+            }
+            isOffline = false // Sets the offline flag to false.
         } // Closes the if-else block.
         
         loadUserProfile() // Calls the method to load the user profile.
@@ -219,7 +221,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
 
                 // If this is the initial load, show a "Feed Updated" toast.
                 if (isFirstLoad) { // Checks if it's the initial load for the app session.
-                    if (isNetworkAvailable()) {
+                    if (isNetworkAvailable()) { // Checks if the device has an active network connection.
                         showToast("Feed Updated", FancyToast.SUCCESS) // Shows a success toast.
                     }
                     isFirstLoad = false // After the first load, set this to false for the lifetime of the app process.
