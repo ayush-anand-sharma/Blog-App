@@ -116,9 +116,9 @@ class SavedArticlesActivity : AppCompatActivity() { // Defines the SavedArticles
         val userId = auth.currentUser?.uid ?: return // Gets the current user ID, returning if null
         val savedBlogsRef = database.reference.child("users").child(userId).child("savedBlogs") // References the "savedBlogs" node for the user
 
-        // Attach a listener to get updates when saved blogs change
-        savedBlogsRef.addValueEventListener(object : ValueEventListener { // Adds a ValueEventListener to the reference
-            override fun onDataChange(snapshot: DataSnapshot) { // Called when data changes at the location
+        // Attach a listener to get the data once
+        savedBlogsRef.addListenerForSingleValueEvent(object : ValueEventListener { // Adds a listener for a single value event
+            override fun onDataChange(snapshot: DataSnapshot) { // Called when data is retrieved
                 val savedBlogItems = mutableListOf<BlogItemModel>() // Creates a mutable list to hold blog items
                 // Iterate through the snapshot and add each blog item to the list
                 for (blogSnapshot in snapshot.children) { // Iterates through each child in the snapshot

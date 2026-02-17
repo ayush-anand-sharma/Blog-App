@@ -16,7 +16,6 @@ import android.view.View // Imports View class for UI elements
 import androidx.activity.result.contract.ActivityResultContracts // Imports ActivityResultContracts for handling activity results
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as the base class for activities
 import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
-import com.ayushcodes.blogapp.activities.CropperActivity
 import com.ayushcodes.blogapp.databinding.ActivityRegisterPageBinding // Imports the generated binding class for the layout
 import com.ayushcodes.blogapp.main.HomePage // Imports the HomePage activity
 import com.ayushcodes.blogapp.model.UserData // Imports the UserData model class
@@ -25,7 +24,9 @@ import com.google.firebase.auth.UserProfileChangeRequest // Imports UserProfileC
 import com.google.firebase.database.FirebaseDatabase // Imports FirebaseDatabase for accessing the Realtime Database
 import com.google.firebase.storage.FirebaseStorage // Imports FirebaseStorage for accessing Firebase Storage
 import com.shashank.sony.fancytoastlib.FancyToast // Imports FancyToast for displaying custom toast messages
+import com.yalantis.ucrop.UCrop // Imports the uCrop library for image cropping.
 import java.io.ByteArrayOutputStream // Imports ByteArrayOutputStream for converting images to bytes
+import java.io.File // Imports the File class for creating a destination for the cropped image.
 import java.text.SimpleDateFormat // Imports SimpleDateFormat for formatting dates
 import java.util.Date // Imports Date class
 import java.util.Locale // Imports Locale class
@@ -41,21 +42,31 @@ class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inh
     private var imageUri: Uri? = null // Variable to hold the URI of the selected image, initially null
 
     // Register for activity result to get content (image) from the device storage
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri -> // Registers activity result launcher for getting content
-        uri?.let { // Checks if the URI is not null
-            val intent = Intent(this, CropperActivity::class.java) // Create an Intent to start CropperActivity
-            intent.data = it // Set the image URI as data for the intent
-            cropImage.launch(intent) // Launch the CropperActivity to crop the image
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri -> // Registers a launcher to pick an image from the device's storage.
+        uri?.let { // Executes the block if an image URI is successfully retrieved.
+            val destinationUri = Uri.fromFile(File(cacheDir, "IMG_" + System.currentTimeMillis())) // Creates a destination URI for the cropped image in the cache directory.
+            val options = UCrop.Options() // Creates a new set of options for customizing the uCrop experience.
+            options.setCircleDimmedLayer(true) // Sets the cropping overlay to a circular shape.
+            options.setCompressionQuality(90) // Sets the compression quality for the cropped image to 90.
+            options.setShowCropFrame(true) // Makes the crop frame visible.
+            options.setShowCropGrid(true) // Makes the crop grid visible.
+
+            val uCrop = UCrop.of(it, destinationUri) // Creates a uCrop request with the source and destination URIs.
+                .withOptions(options) // Applies the custom options.
+                .withAspectRatio(1f, 1f) // Sets a fixed 1:1 aspect ratio for the crop.
+                .withMaxResultSize(1000, 1000) // Sets the maximum dimensions of the cropped image.
+
+            cropImage.launch(uCrop.getIntent(this)) // Launches the uCrop activity using the configured intent.
         }
     }
 
     // Register for activity result to get the cropped image
-    private val cropImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> // Registers activity result launcher for getting cropped image
-        if (result.resultCode == RESULT_OK) { // Check if the result is OK
-            val uri = result.data?.data // Get the cropped image URI from the result
-            uri?.let { // If the URI is not null
-                binding.userProfile.setImageURI(it) // Set the cropped image to the ImageView
-                imageUri = it // Update the imageUri variable
+    private val cropImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> // Registers a launcher to handle the result from the uCrop activity.
+        if (result.resultCode == RESULT_OK) { // Checks if the cropping was successful.
+            val uri = UCrop.getOutput(result.data!!) // Retrieves the URI of the cropped image from the result data.
+            uri?.let { // Executes the block if the cropped image URI is not null.
+                binding.userProfile.setImageURI(it) // Displays the cropped image in the profile image view.
+                imageUri = it // Updates the imageUri with the cropped image's URI.
             }
         }
     }

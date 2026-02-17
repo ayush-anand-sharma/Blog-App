@@ -1,39 +1,34 @@
 package com.ayushcodes.blogapp.main // Defines the package for the class.
 
-import android.annotation.SuppressLint // Imports the annotation used to suppress lint warnings.
-import android.content.Context // Imports the Context class, which provides access to application-specific resources and classes.
-import android.content.Intent // Imports Intent class for launching activities
-import android.graphics.Bitmap // Imports the Bitmap class, used for representing images.
-import android.net.ConnectivityManager // Imports the ConnectivityManager class, used to check network connectivity.
-import android.net.NetworkCapabilities // Imports NetworkCapabilities, which provides information about the properties of a network.
-import android.net.Uri // Imports the Uri class, used to identify resources.
-import android.os.Bundle // Imports the Bundle class, used for passing data between Android components.
-import android.provider.MediaStore // Imports the MediaStore class, which provides access to the media content provider.
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View // Imports the View class, the basic building block for user interface components.
+import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.enableEdgeToEdge // Imports the function to enable edge-to-edge display in the activity.
-import androidx.activity.result.contract.ActivityResultContracts // Imports ActivityResultContracts, which provides standard contracts for activity results.
-import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity, a base class for activities that use the support library action bar features.
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
-import androidx.core.view.ViewCompat // Imports ViewCompat, which provides compatibility helpers for views.
-import androidx.core.view.WindowInsetsCompat // Imports WindowInsetsCompat, which provides compatibility for window insets.
-import cn.pedant.SweetAlert.SweetAlertDialog // Imports the SweetAlertDialog library for displaying beautiful alert dialogs.
-import com.ayushcodes.blogapp.R // Imports the R class, which contains all the resource IDs for the application.
-import com.ayushcodes.blogapp.activities.CropperActivity
-import com.ayushcodes.blogapp.databinding.ActivityEditProfileBinding // Imports the generated data binding class for the activity_edit_profile layout.
-import com.bumptech.glide.Glide // Imports the Glide library for image loading and caching.
-import com.bumptech.glide.request.RequestOptions // Imports RequestOptions, used to apply options to a Glide request.
-import com.google.firebase.auth.FirebaseAuth // Imports the FirebaseAuth class, used for handling user authentication.
-import com.google.firebase.auth.UserProfileChangeRequest // Imports UserProfileChangeRequest, used to update a user's profile information.
-import com.google.firebase.database.DataSnapshot // Imports DataSnapshot, which represents a snapshot of the data at a Firebase Database location.
-import com.google.firebase.database.DatabaseError // Imports DatabaseError, which represents an error that occurred while listening to a Firebase Database location.
-import com.google.firebase.database.FirebaseDatabase // Imports the FirebaseDatabase class, the entry point for accessing a Firebase Database.
-import com.google.firebase.database.ValueEventListener // Imports ValueEventListener, used to receive events about data changes at a location.
-import com.google.firebase.storage.FirebaseStorage // Imports the FirebaseStorage class, the entry point for accessing Firebase Storage.
-import com.shashank.sony.fancytoastlib.FancyToast // Imports the FancyToast library for creating custom toasts.
-import java.io.ByteArrayOutputStream // Imports ByteArrayOutputStream, which implements an output stream in which the data is written into a byte array.
+import cn.pedant.SweetAlert.SweetAlertDialog
+import com.ayushcodes.blogapp.databinding.ActivityEditProfileBinding
+import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.shashank.sony.fancytoastlib.FancyToast
+import com.yalantis.ucrop.UCrop // Imports the uCrop library for image cropping.
+import java.io.ByteArrayOutputStream
+import java.io.File // Imports the File class for creating a destination for the cropped image.
 
 @Suppress("DEPRECATION") // Suppresses warnings for deprecated code used in this class.
 class EditProfile : AppCompatActivity() { // Defines the EditProfile class, which inherits from AppCompatActivity.
@@ -47,31 +42,40 @@ class EditProfile : AppCompatActivity() { // Defines the EditProfile class, whic
     private var isNameChanged = false // Flag to track if the user has changed their name.
     private var isProfileImageChanged = false // Flag to track if the user has selected a new profile image.
     private var initialName: String? = null // Stores the initial name of the user to compare against changes.
+    private var oldImageUrl: String? = null // Stores the old image URL to delete it from storage.
 
     // Register for activity result to get content (image) from the device storage
-    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri -> // Registers activity result launcher for getting content
-        uri?.let { // Checks if the URI is not null
-            val intent = Intent(this, CropperActivity::class.java) // Create an Intent to start CropperActivity
-            intent.data = it // Set the image URI as data for the intent
-            cropImage.launch(intent) // Launch the CropperActivity to crop the image
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri -> // Registers a launcher to pick an image from the device's storage.
+        uri?.let { // Executes the block if an image URI is successfully retrieved.
+            val destinationUri = Uri.fromFile(File(cacheDir, "IMG_" + System.currentTimeMillis())) // Creates a destination URI for the cropped image in the cache directory.
+            val options = UCrop.Options() // Creates a new set of options for customizing the uCrop experience.
+            options.setCircleDimmedLayer(true) // Sets the cropping overlay to a circular shape.
+            options.setCompressionQuality(90) // Sets the compression quality for the cropped image to 90.
+            options.setShowCropFrame(true) // Makes the crop frame visible.
+            options.setShowCropGrid(true) // Makes the crop grid visible.
+
+            val uCrop = UCrop.of(it, destinationUri) // Creates a uCrop request with the source and destination URIs.
+                .withOptions(options) // Applies the custom options.
+                .withAspectRatio(1f, 1f) // Sets a fixed 1:1 aspect ratio for the crop.
+                .withMaxResultSize(1000, 1000) // Sets the maximum dimensions of the cropped image.
+
+            cropImage.launch(uCrop.getIntent(this)) // Launches the uCrop activity using the configured intent.
         }
     }
 
-    // Register for activity result to get the cropped image
-    private val cropImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> // Registers activity result launcher for getting cropped image
-        if (result.resultCode == RESULT_OK) { // Check if the result is OK
-            val uri = result.data?.data // Get the cropped image URI from the result
-            uri?.let { // If the URI is not null
-                newImageUri = it // Stores the selected image URI.
-                isProfileImageChanged = true // Sets the flag to indicate that the profile image has been changed.
-                binding.profileImage.setImageURI(it) // Sets the cropped image to the ImageView
+    private val cropImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> // Registers a launcher to handle the result from the uCrop activity.
+        if (result.resultCode == RESULT_OK) { // Checks if the cropping was successful.
+            val uri = UCrop.getOutput(result.data!!) // Retrieves the URI of the cropped image from the result data.
+            uri?.let { // Executes the block if the cropped image URI is not null.
+                newImageUri = it // Updates the newImageUri with the cropped image's URI.
+                isProfileImageChanged = true // Sets the flag to indicate the profile image has changed.
+                binding.profileImage.setImageURI(it) // Displays the cropped image in the profile image view.
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides the onCreate method, which is called when the activity is first created.
         super.onCreate(savedInstanceState) // Calls the superclass's implementation of onCreate.
-        enableEdgeToEdge() // Enables edge-to-edge display for the activity, allowing content to draw under system bars.
         binding = ActivityEditProfileBinding.inflate(layoutInflater) // Inflates the layout and initializes the binding object.
         setContentView(binding.root) // Sets the activity's content view to the root of the inflated layout.
 
@@ -79,12 +83,6 @@ class EditProfile : AppCompatActivity() { // Defines the EditProfile class, whic
             showToast("Please check your internet connection.", FancyToast.INFO) // Shows an informational toast to the user.
             finish() // Finishes the activity, preventing the user from seeing an empty page.
             return // Stops further execution of the onCreate method.
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets -> // Sets a listener to handle window insets, such as the status and navigation bars.
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()) // Retrieves the insets for the system bars.
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom) // Applies padding to the root view to avoid content overlapping with system bars.
-            insets // Returns the original insets.
         }
 
         auth = FirebaseAuth.getInstance() // Gets an instance of FirebaseAuth.
@@ -224,14 +222,19 @@ class EditProfile : AppCompatActivity() { // Defines the EditProfile class, whic
         auth.currentUser?.updateProfile(userProfileChangeRequest) // Updates the user's profile in Firebase Authentication.
 
         val userRef = database.reference.child("users").child(userId) // Gets a reference to the user's data in the Firebase Realtime Database.
-        userRef.child("profileImage").setValue(imageUrl).addOnCompleteListener { // Sets the new profile image URL in the database.
-            if (it.isSuccessful) { // Checks if the database update was successful.
+        userRef.child("profileImage").setValue(imageUrl).addOnCompleteListener { task -> // Sets the new profile image URL in the database.
+            if (task.isSuccessful) { // Checks if the database update was successful.
+                updateBlogPostsWithNewProfileImage(userId, imageUrl, progressDialog) // Updates all blog posts with the new profile image.
                 isProfileImageChanged = false // Resets the profile image changed flag.
                 if (isNameChanged) { // Checks if the name was also changed.
                     updateName(progressDialog) // Calls the function to update the name.
                 } else { // If only the image was changed.
-                    progressDialog.dismissWithAnimation()
+                    progressDialog.dismissWithAnimation()// Dismiss the progress dialog.
                     showToast("Profile Saved", FancyToast.SUCCESS) // Shows a success toast message.
+                    navigateToProfilePage() // Navigates to the ProfilePage.
+                }
+                oldImageUrl?.let { url -> // Checks if there is an old image URL.
+                    storage.getReferenceFromUrl(url).delete() // Deletes the old profile picture from Firebase Storage.
                 }
             } else { // Executes if the database update failed.
                 progressDialog.dismissWithAnimation()
@@ -240,142 +243,143 @@ class EditProfile : AppCompatActivity() { // Defines the EditProfile class, whic
         }
     }
 
-    private fun updateName(progressDialog: SweetAlertDialog) { // Defines a function to update the user's display name.
-        val userId = auth.currentUser?.uid ?: return // Gets the current user's ID, returns if null.
-        val newName = binding.profileFullName.text.toString().trim() // Gets the new name from the EditText and trims whitespace.
+    private fun updateName(progressDialog: SweetAlertDialog) { // Defines a function to update the user's name in Firebase.
+        val newName = binding.profileFullName.text.toString().trim() // Gets the new name from the EditText and trims any whitespace.
+        val userId = auth.currentUser?.uid ?: return // Gets the current user's ID, or returns if null.
 
-        if (newName.isEmpty()) { // Checks if the new name is empty.
-            showToast("Name cannot be empty", FancyToast.WARNING) // Shows a warning toast if the name is empty.
-            progressDialog.dismissWithAnimation()
-            return // Exits the function.
-        }
-
-        val userProfileChangeRequest = UserProfileChangeRequest.Builder().setDisplayName(newName).build() // Builds a request to update the user's display name.
-        auth.currentUser?.updateProfile(userProfileChangeRequest)?.addOnCompleteListener { task -> // Updates the user's profile and adds a completion listener.
-            if (task.isSuccessful) { // Checks if the profile update was successful.
+        // Update display name in Firebase Authentication.
+        val profileUpdates = UserProfileChangeRequest.Builder().setDisplayName(newName).build() // Builds a request to update the user's display name.
+        auth.currentUser?.updateProfile(profileUpdates)?.addOnCompleteListener { task -> // Updates the user's profile in Firebase Authentication.
+            if (task.isSuccessful) { // Checks if the update was successful.
                 val userRef = database.reference.child("users").child(userId) // Gets a reference to the user's data in the database.
-                userRef.child("name").setValue(newName).addOnCompleteListener { // Updates the name in the database.
-                    progressDialog.dismissWithAnimation()
-                    if (it.isSuccessful) { // Checks if the database update was successful.
+                userRef.child("name").setValue(newName).addOnCompleteListener { task2 ->// Sets the new name in the database.
+                    if (task2.isSuccessful) { // Checks if the database update was successful.
+                        updateBlogPostsWithNewName(userId, newName, progressDialog) // Updates all blog posts with the new name.
                         isNameChanged = false // Resets the name changed flag.
                         showToast("Profile Saved", FancyToast.SUCCESS) // Shows a success toast.
-                        initialName = newName // Updates the initial name to the new name.
-                    } else { // Executes if the database update failed.
+                        navigateToProfilePage() // Navigates to the ProfilePage.
+                    } else { // If the database update failed.
+                        progressDialog.dismissWithAnimation()
                         showToast("Something went wrong. Please try again.", FancyToast.ERROR) // Shows an error toast.
                     }
                 }
-            } else { // Executes if the profile update failed.
+            } else { // If the auth update failed.
                 progressDialog.dismissWithAnimation()
                 showToast("Something went wrong. Please try again.", FancyToast.ERROR) // Shows an error toast.
             }
         }
     }
 
-    private fun showPasswordChangeConfirmation() { // Defines a function to show a confirmation dialog before changing the password.
-        SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE) // Creates a new warning-style SweetAlertDialog.
-            .setTitleText("Change Password") // Sets the title of the alert dialog.
-            .setContentText("Are You Sure You Want To Change Your Password?") // Sets the main message of the alert dialog.
-            .setConfirmText("Yes") // Sets the text for the confirm button.
-            .setConfirmClickListener { sDialog -> // Sets the action to perform when the confirm button is clicked.
-                sDialog.changeAlertType(SweetAlertDialog.PROGRESS_TYPE) // Changes the dialog to a progress type.
-                sDialog.titleText = "Sending Link..." // Updates the title to indicate progress.
-                sDialog.setCancelable(false) // Prevents the dialog from being canceled by the user.
-                changePassword(sDialog) // Calls the function to send the password reset email.
-            }
-            .setCancelText("Back") // Sets the text for the cancel button.
-            .setCancelClickListener { it.dismissWithAnimation() } // Sets the action to dismiss the dialog when the cancel button is clicked.
-            .show() // Displays the alert dialog.
-    }
-
-    private fun changePassword(dialog: SweetAlertDialog) { // Defines a function to handle the password change process.
-        val user = auth.currentUser // Gets the currently logged-in user.
-        if (user != null && user.email != null) { // Checks if the user and their email are not null.
-            auth.sendPasswordResetEmail(user.email!!).addOnCompleteListener { task -> // Sends a password reset email to the user's email address.
-                if (task.isSuccessful) { // Checks if the email was sent successfully.
-                    dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE) // Changes the dialog to a success type.
-                    dialog.titleText = "Success!" // Sets the title of the success dialog.
-                    dialog.contentText = "Password reset link sent to your email." // Sets the content of the success dialog.
-                    dialog.setConfirmText("OK") // Sets the confirm button text.
-                    dialog.setConfirmClickListener { it.dismissWithAnimation() } // Dismisses the dialog on confirm click.
-                    dialog.show() // Shows the updated dialog.
-                } else { // Executes if sending the email failed.
-                    dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE) // Changes the dialog to an error type.
-                    dialog.titleText = "Error" // Sets the title of the error dialog.
-                    dialog.contentText = "Something went wrong. Please try again." // Sets the content of the error dialog.
-                    dialog.setConfirmText("OK") // Sets the confirm button text.
-                    dialog.setConfirmClickListener { it.dismissWithAnimation() } // Dismisses the dialog on confirm click.
-                    dialog.show() // Shows the updated dialog.
+    private fun updateBlogPostsWithNewName(userId: String, newName: String, progressDialog: SweetAlertDialog) { // Defines a function to update all of a user's blog posts with the new name.
+        val blogsRef = database.reference.child("blogs") // Gets a reference to the main "blogs" node in the database.
+        blogsRef.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(object : ValueEventListener { // Queries for all blogs where the userId matches the current user's ID.
+            override fun onDataChange(snapshot: DataSnapshot) { // Called when the data is retrieved.
+                for (blogSnapshot in snapshot.children) { // Iterates through all the matching blog posts.
+                    blogSnapshot.ref.child("userName").setValue(newName) // Updates the userName for each blog post.
                 }
-            }
-        } else { // Executes if the user or their email is null.
-            dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE) // Changes the dialog to an error type.
-            dialog.titleText = "Error" // Sets the title of the error dialog.
-            dialog.contentText = "Could not find a registered email to send the link to." // Sets the content of the error dialog.
-            dialog.setConfirmText("OK") // Sets the confirm button text.
-            dialog.setConfirmClickListener { it.dismissWithAnimation() } // Dismisses the dialog on confirm click.
-            dialog.show() // Shows the updated dialog.
-        }
-    }
-
-    private fun loadUserData() { // Defines a function to load user data from Firebase.
-        binding.progressBar.visibility = View.VISIBLE // Makes the progress bar visible.
-        val userId = auth.currentUser?.uid ?: return // Gets the current user's ID, or returns if null.
-        val userReference = database.reference.child("users").child(userId) // Gets a reference to the user's data in the database.
-
-        userReference.addListenerForSingleValueEvent(object : ValueEventListener { // Adds a one-time listener to fetch the user's data.
-            override fun onDataChange(snapshot: DataSnapshot) { // Called when data is retrieved from Firebase.
-                if (isDestroyed || isFinishing) return // Returns if the activity is being destroyed or finishing.
-
-                val name = snapshot.child("name").getValue(String::class.java) // Retrieves the user's name from the data snapshot.
-                val profileImage = snapshot.child("profileImage").getValue(String::class.java) // Retrieves the user's profile image URL from the snapshot.
-
-                initialName = name ?: auth.currentUser?.displayName // Sets the initial name for later comparison.
-                binding.profileFullName.setText(initialName) // Sets the full name EditText with the retrieved name.
-
-                if (!profileImage.isNullOrEmpty()) { // Checks if a profile image URL was retrieved.
-                    Glide.with(this@EditProfile) // Starts a Glide request.
-                        .load(profileImage) // Loads the image from the URL.
-                        .apply(RequestOptions.circleCropTransform()) // Applies a circular crop.
-                        .placeholder(R.drawable.default_avatar) // Sets a placeholder image.
-                        .error(R.drawable.default_avatar) // Sets an error image.
-                        .into(binding.profileImage) // Displays the image in the profile ImageView.
-                } else { // Executes if no profile image URL is in the database.
-                    auth.currentUser?.photoUrl?.let { // Checks if the user has a photo URL in their Firebase Auth profile.
-                        Glide.with(this@EditProfile) // Starts a Glide request.
-                            .load(it) // Loads the image from the Auth photo URL.
-                            .apply(RequestOptions.circleCropTransform()) // Applies a circular crop.
-                            .placeholder(R.drawable.default_avatar) // Sets a placeholder.
-                            .error(R.drawable.default_avatar) // Sets an error image.
-                            .into(binding.profileImage) // Displays the image.
-                    } ?: Glide.with(this@EditProfile) // If no Auth photo URL, loads the default avatar.
-                        .load(R.drawable.default_avatar) // Loads the default avatar drawable.
-                        .apply(RequestOptions.circleCropTransform()) // Applies a circular crop.
-                        .into(binding.profileImage) // Displays the default avatar.
-                }
-                binding.progressBar.visibility = View.GONE // Hides the progress bar.
+                progressDialog.dismissWithAnimation()
             }
 
-            override fun onCancelled(error: DatabaseError) { // Called if the database read is cancelled or fails.
-                if (!isDestroyed || !isFinishing) { // Checks if the activity is still active.
-                    binding.progressBar.visibility = View.GONE // Hides the progress bar.
-                    showToast("Something went wrong.", FancyToast.ERROR) // Shows an error toast.
-                }
+            override fun onCancelled(error: DatabaseError) { // Called if the query is cancelled or fails.
+                progressDialog.dismissWithAnimation()
+                showToast("Something went wrong. Please try again.", FancyToast.ERROR) // Shows an error toast.
             }
         })
     }
 
-    private fun isNetworkAvailable(): Boolean { // Defines a function to check for network availability.
+    private fun updateBlogPostsWithNewProfileImage(userId: String, newImageUrl: String, progressDialog: SweetAlertDialog) { // Defines a function to update all of a user's blog posts with the new profile image.
+        val blogsRef = database.reference.child("blogs") // Gets a reference to the main "blogs" node in the database.
+        blogsRef.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(object : ValueEventListener { // Queries for all blogs where the userId matches the current user's ID.
+            override fun onDataChange(snapshot: DataSnapshot) { // Called when the data is retrieved.
+                for (blogSnapshot in snapshot.children) { // Iterates through all the matching blog posts.
+                    blogSnapshot.ref.child("profileImage").setValue(newImageUrl) // Updates the profileImage for each blog post.
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) { // Called if the query is cancelled or fails.
+                progressDialog.dismissWithAnimation()
+                showToast("Something went wrong. Please try again.", FancyToast.ERROR) // Shows an error toast.
+            }
+        })
+    }
+
+    private fun showPasswordChangeConfirmation() { // Defines a function to show a confirmation dialog for changing the password.
+        SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE) // Creates a new normal-style SweetAlertDialog.
+            .setTitleText("Change Password") // Sets the title of the alert dialog.
+            .setContentText("You will be logged out and asked to enter your registered email to receive a password reset link.") // Sets the main message of the alert dialog.
+            .setConfirmText("Proceed") // Sets the text for the confirm button.
+            .setConfirmClickListener { // Sets the action to perform when the confirm button is clicked.
+                it.dismissWithAnimation() // Dismisses the dialog.
+                sendPasswordResetEmail() // Calls the function to send a password reset email.
+            }
+            .setCancelText("Back") // Sets the text for the cancel button.
+            .setCancelClickListener { it.dismissWithAnimation() } // Dismisses the dialog when the cancel button is clicked.
+            .show() // Displays the alert dialog.
+    }
+
+    private fun sendPasswordResetEmail() { // Defines a function to send a password reset email.
+        val email = auth.currentUser?.email // Gets the current user's email.
+        if (email != null) { // Checks if the email is not null.
+            auth.sendPasswordResetEmail(email).addOnCompleteListener { task -> // Sends a password reset email to the user's email address.
+                if (task.isSuccessful) { // Checks if the email was sent successfully.
+                    showToast("Password reset link sent. Check your email.", FancyToast.SUCCESS) // Shows a success toast.
+                    auth.signOut() // Signs out the user.
+                    val intent = Intent(this, com.ayushcodes.blogapp.register.LogInScreen::class.java) // Creates an intent to go to the login screen.
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clears the activity stack.
+                    startActivity(intent) // Starts the login activity.
+                    finish() // Finishes the current activity.
+                } else { // Executes if the email could not be sent.
+                    showToast("Something went wrong.", FancyToast.ERROR) // Shows an error toast.
+                }
+            }
+        } else { // Executes if the user's email is not available.
+            showToast("Email not found.", FancyToast.ERROR) // Shows an error toast.
+        }
+    }
+
+    private fun loadUserData() { // Defines a function to load the user's data.
+        val userId = auth.currentUser?.uid // Gets the current user's ID.
+        if (userId != null) { // Checks if the user ID is not null.
+            val userRef = database.reference.child("users").child(userId) // Gets a reference to the user's data in the database.
+            binding.progressBar.visibility = View.VISIBLE // Makes the progress bar visible.
+            userRef.addListenerForSingleValueEvent(object : ValueEventListener { // Adds a listener to retrieve the data once.
+                override fun onDataChange(snapshot: DataSnapshot) { // Called when the data is retrieved.
+                    initialName = snapshot.child("name").getValue(String::class.java) // Gets the user's name from the snapshot.
+                    oldImageUrl = snapshot.child("profileImage").getValue(String::class.java) // Gets the user's old profile image URL.
+
+                    binding.profileFullName.setText(initialName) // Sets the user's name in the EditText.
+
+                    if (!isDestroyed) // Checks if the activity is not destroyed before loading the image.
+                        Glide.with(this@EditProfile).load(oldImageUrl).into(binding.profileImage) // Loads the profile image using Glide.
+
+                    binding.progressBar.visibility = View.GONE // Hides the progress bar.
+                }
+
+                override fun onCancelled(error: DatabaseError) { // Called if the data retrieval is cancelled.
+                    binding.progressBar.visibility = View.GONE // Hides the progress bar.
+                    showToast("Failed to load user data", FancyToast.ERROR) // Shows an error toast.
+                }
+            })
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean { // Defines a function to check if there is an active network connection.
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager // Gets the ConnectivityManager system service.
-        val network = connectivityManager.activeNetwork ?: return false // Gets the currently active network, or returns false if none.
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false // Gets the capabilities of the active network, or returns false if none.
-        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || // Returns true if the network has WiFi transport.
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || // Or cellular transport.
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) // Or ethernet transport.
+        val network = connectivityManager.activeNetwork ?: return false // Gets the current active network.
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false // Gets the network capabilities of the active network.
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || // Checks if the network has Wi-Fi transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || // Checks if the network has cellular transport.
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) // Checks if the network has Ethernet transport.
     }
 
     private fun showToast(message: String, type: Int) { // Defines a function to show a custom toast message.
-        if (!isDestroyed && !isFinishing) { // Checks if the activity is not being destroyed or finishing.
-            FancyToast.makeText(this, message, FancyToast.LENGTH_SHORT, type, R.mipmap.blog_app_icon_round, false).show() // Creates and shows a FancyToast.
-        }
+        FancyToast.makeText(this, message, FancyToast.LENGTH_SHORT, type, com.ayushcodes.blogapp.R.mipmap.blog_app_icon_round, false).show() // Creates and shows a FancyToast.
+    }
+
+    private fun navigateToProfilePage() { // Defines a function to navigate to the ProfilePage.
+        val intent = Intent(this, ProfilePage::class.java) // Creates an intent to go to the ProfilePage.
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // This flag ensures that the ProfilePage is launched in a new task.
+        startActivity(intent) // Starts the ProfilePage activity.
+        finish() // Finishes the current activity.
     }
 }

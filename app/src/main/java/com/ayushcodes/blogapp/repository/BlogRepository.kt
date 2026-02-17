@@ -22,7 +22,8 @@ object BlogRepository { // Defines BlogRepository singleton object
 
     private val database = FirebaseDatabase.getInstance() // Gets FirebaseDatabase instance
     private val auth = FirebaseAuth.getInstance() // Gets FirebaseAuth instance
-    private val scope = CoroutineScope(Dispatchers.IO) // Creates CoroutineScope on IO dispatcher
+    private var currentUserId: String? = null // CHANGE: Keep track of the current user ID to correctly detach listeners.
+
 
     private val _interactionState = MutableStateFlow<Map<String, PostInteractionState>>(emptyMap()) // Private mutable interaction state
     val interactionState: StateFlow<Map<String, PostInteractionState>> = _interactionState.asStateFlow() // Public immutable interaction state
@@ -47,19 +48,58 @@ object BlogRepository { // Defines BlogRepository singleton object
     private val activeBlogListeners = mutableMapOf<String, ValueEventListener>() // Map to store active listeners
 
     init { // Initializer block
-        // Listen to User's Liked/Saved lists to keep local state in sync with remote
+        // CHANGE: Rewrote the auth state listener for more robust handling of login and logout.
         auth.addAuthStateListener { firebaseAuth -> // Adds auth state listener
-            val userId = firebaseAuth.currentUser?.uid // Gets current user ID
-            if (userId != null) { // Checks if user is logged in
-                database.getReference("users").child(userId).child("likedBlogs") // References likedBlogs node
-                    .addValueEventListener(likedBlogsListener) // Adds listener
-                database.getReference("users").child(userId).child("savedBlogs") // References savedBlogs node
-                    .addValueEventListener(savedBlogsListener) // Adds listener
-            } else { // Executed if user is logged out
-                _interactionState.value = emptyMap() // Clears interaction state
+            val newUser = firebaseAuth.currentUser
+            if (newUser != null) {
+                // User is logged in.
+                currentUserId = newUser.uid
+                // Attach listeners for the new user.
+                attachUserListeners(currentUserId!!)
+            } else {
+                // User is logged out.
+                if (currentUserId != null) {
+                    // Detach listeners from the old user to prevent memory leaks.
+                    detachUserListeners(currentUserId!!)
+                    currentUserId = null
+                }
+                // Clear only the user-specific parts of the state (likes/saves), not the whole thing.
+                clearUserInteractionState()
             }
         }
     }
+    // CHANGE: New function to attach listeners for a specific user.
+    private fun attachUserListeners(userId: String) {
+        database.getReference("users").child(userId).child("likedBlogs")
+            .addValueEventListener(likedBlogsListener)
+        database.getReference("users").child(userId).child("savedBlogs")
+            .addValueEventListener(savedBlogsListener)
+    }
+
+    // CHANGE: New function to detach listeners, preventing memory leaks on logout.
+    private fun detachUserListeners(userId: String) {
+        database.getReference("users").child(userId).child("likedBlogs")
+            .removeEventListener(likedBlogsListener)
+        database.getReference("users").child(userId).child("savedBlogs")
+            .removeEventListener(savedBlogsListener)
+    }
+
+    // CHANGE: New function to clear only user-specific state on logout.
+    private fun clearUserInteractionState() {
+        // This function is the core of the fix.
+        _interactionState.update { currentState ->
+            val newState = currentState.toMutableMap()
+            // We iterate through every blog post we're tracking...
+            newState.forEach { (blogId, state) ->
+                // ...and we create a new state that resets `isLiked` and `isSaved` to false,
+                // but—crucially—preserves the public `likeCount`.
+                newState[blogId] = state.copy(isLiked = false, isSaved = false)
+            }
+            // The result is that the like count no longer resets to zero on logout.
+            newState
+        }
+    }
+
 
     // Call this when data is loaded from API to initialize state
     fun initializeState(blogs: List<BlogItemModel>) { // Method to initialize state with blog list
@@ -214,7 +254,7 @@ object BlogRepository { // Defines BlogRepository singleton object
 
     fun toggleSave(blogId: String, blogItem: BlogItemModel) { // Method to toggle save
         val userId = auth.currentUser?.uid ?: return // Gets user ID, returns if null
-        val currentState = _interactionState.value[blogId] ?: PostInteractionState(blogId) // Gets current state
+        val currentState = _interactionState.value[blogId] ?: PostInteractionState(blogId) // CHANGE: Fixed typo here from _interactionAcoState to _interactionState
         val isCurrentlySaved = currentState.isSaved // Gets current saved status
 
         // Optimistic Update

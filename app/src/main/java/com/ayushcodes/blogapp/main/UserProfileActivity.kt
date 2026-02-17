@@ -29,15 +29,19 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
 
     // Lazily initialize view binding for the activity layout
     private lateinit var binding: ActivityUserProfileBinding // Declares a variable for view binding
-    
+
     // Firebase Database instance to fetch user data
     private lateinit var database: FirebaseDatabase // Declares a variable for the Firebase Database instance
-    
+
     // Firebase Auth
     private lateinit var auth: FirebaseAuth // Declares a variable for the Firebase Authentication instance
 
     // Adapter reference
     private lateinit var blogAdapter: BlogAdapter // Declares a variable for the BlogAdapter
+
+    private var userId: String? = null // EDITED: Stores the user ID for the profile being viewed.
+    private var profileImageUrl: String? = null // EDITED: Stores the URL of the profile image.
+
 
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides the onCreate method to initialize the activity
@@ -61,7 +65,7 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
         binding.backButton.setOnClickListener { finish() } // Sets an OnClickListener on the back button to finish the activity
 
         // Retrieve the user ID from the intent extras
-        val userId = intent.getStringExtra("userId") // Gets the "userId" string extra from the intent
+        userId = intent.getStringExtra("userId") // Gets the "userId" string extra from the intent
         if (userId == null) { // Checks if the userId is null
             finish() // Exit if no valid userId is provided // Finishes the activity
             return // Returns from the method
@@ -70,11 +74,27 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
         // Initialize Recycler View
         setupRecyclerView() // Calls the method to set up the RecyclerView
         observeInteractionState() // Calls the method to observe state changes
+        setupProfileImageClickListener() // EDITED: Sets up the click listener for the profile image.
 
         // Load user profile and blogs
-        loadUserProfile(userId) // Loads the user's profile information
-        loadUserBlogs(userId) // Loads the user's blogs
+        loadUserBlogs(userId!!) // Loads the user's blogs
     }
+
+    override fun onResume() { // EDITED: Overrides the onResume method to refresh the profile.
+        super.onResume() // EDITED: Calls the superclass's implementation of onResume.
+        userId?.let { loadUserProfile(it) } // EDITED: Reloads the user profile to ensure data is up-to-date.
+    }
+
+    private fun setupProfileImageClickListener() { // EDITED: Defines a new function to set up the click listener for the profile image.
+        binding.userProfileImage.setOnClickListener { // EDITED: Sets a click listener on the user's profile image.
+            profileImageUrl?.let { url -> // EDITED: Checks if the profile image URL is not null.
+                val intent = Intent(this, FullScreenImageActivity::class.java) // EDITED: Creates an intent to start the FullScreenImageActivity.
+                intent.putExtra("image_url", url) // EDITED: Passes the image URL to the new activity.
+                startActivity(intent) // EDITED: Starts the activity.
+            }
+        }
+    }
+
 
     // Configures the RecyclerView and adapter
     private fun setupRecyclerView() { // Defines a method to set up the RecyclerView
@@ -103,7 +123,7 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
                 }
             }
         )
-        
+
         binding.userBlogsRecyclerView.apply { // Applies configuration to the RecyclerView
             layoutManager = LinearLayoutManager(this@UserProfileActivity) // Sets the LayoutManager to LinearLayoutManager
             adapter = blogAdapter // Sets the adapter for the RecyclerView
@@ -129,14 +149,17 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
             override fun onDataChange(snapshot: DataSnapshot) { // Called when data is received
                 // Extract user details from the snapshot
                 val name = snapshot.child("name").getValue(String::class.java) // Gets the user's name
-                val profileImage = snapshot.child("profileImage").getValue(String::class.java) // Gets the user's profile image URL
+                profileImageUrl = snapshot.child("profileImage").getValue(String::class.java) // EDITED: Stores the profile image URL.
+
                 val creationDate = snapshot.child("creationDate").getValue(String::class.java) // Gets the user's creation date
 
                 // Populate UI with user details
                 binding.userFullName.text = name // Sets the name TextView
                 binding.memberSinceDate.text = creationDate // Sets the member since TextView
-                if (profileImage != null && !isDestroyed) { // Checks if profile image is not null and activity is active
-                    Glide.with(this@UserProfileActivity).load(profileImage).into(binding.userProfileImage) // Loads the profile image using Glide
+                if (profileImageUrl != null && !isDestroyed) { // Checks if profile image is not null and activity is active
+                    Glide.with(this@UserProfileActivity)
+                        .load(profileImageUrl) // Sets the image URL to load
+                        .into(binding.userProfileImage) // Loads the image into the specified ImageView
                 }
                 binding.progressBar.visibility = View.GONE // Hide progress bar on success // Hides the progress bar
             }
@@ -165,10 +188,10 @@ class UserProfileActivity : AppCompatActivity() { // Defines the UserProfileActi
                     }
                 }
                 blogItems.reverse() // Reverse list to show newest blogs first // Reverses the list to show newest first
-                
+
                 // Initialize repository state for these blogs
                 BlogRepository.initializeState(blogItems) // Initializes the repository state with the fetched items
-                
+
                 blogAdapter.submitList(blogItems) // Submits the list to the adapter
                 binding.progressBar.visibility = View.GONE // Hide progress bar on success // Hides the progress bar
             }

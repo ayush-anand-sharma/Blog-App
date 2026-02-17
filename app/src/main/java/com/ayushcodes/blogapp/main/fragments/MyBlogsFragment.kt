@@ -23,6 +23,7 @@ import com.ayushcodes.blogapp.repository.BlogRepository // Imports the repositor
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
 import com.google.firebase.database.DataSnapshot // Imports DataSnapshot for reading data from Firebase
 import com.google.firebase.database.DatabaseError // Imports DatabaseError for handling database errors
+import com.google.firebase.database.DatabaseReference // EDITED: Imports the DatabaseReference class for handling database references.
 import com.google.firebase.database.FirebaseDatabase // Imports FirebaseDatabase for accessing the Realtime Database
 import com.google.firebase.database.ValueEventListener // Imports ValueEventListener for listening to data changes
 import com.shashank.sony.fancytoastlib.FancyToast // Imports FancyToast for displaying custom toast messages
@@ -40,6 +41,9 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
 
     // Adapter for the RecyclerView
     private lateinit var blogAdapter: BlogAdapter // Declares a private lateinit variable for the BlogAdapter.
+    private var eventListener: ValueEventListener? = null // EDITED: Adds a ValueEventListener to be able to remove it later.
+    private lateinit var userBlogsReference: DatabaseReference // EDITED: Holds a reference to the user's blogs in the database.
+
 
     // Called to have the fragment instantiate its user interface view
     override fun onCreateView( // Overrides the onCreateView method of the Fragment class.
@@ -59,6 +63,8 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
         // Initialize Firebase instances
         auth = FirebaseAuth.getInstance() // Initializes the FirebaseAuth instance.
         database = FirebaseDatabase.getInstance() // Initializes the FirebaseDatabase instance.
+        userBlogsReference = database.reference.child("users").child(auth.currentUser?.uid!!).child("Blogs") // EDITED: Initializes the reference to the user's blogs.
+
 
         // Configure the RecyclerView with the adapter
         blogAdapter = BlogAdapter( // Initializes the BlogAdapter.
@@ -97,34 +103,39 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
         }
 
         observeInteractionState() // Calls the method to start observing UI interaction state.
+        fetchMyBlogs() // Fetches the blogs to ensure the list is up-to-date.
+    }
 
-        // Fetch the list of blogs created by the current user from Firebase
-        val userId = auth.currentUser?.uid // Gets the unique ID of the current user.
-        if (userId != null) { // Checks if the userId is not null.
-            val userBlogsReference = database.reference.child("users").child(userId).child("Blogs") // Gets a reference to the user's blogs in the Firebase database.
-            // Attach a listener to get updates when the user's blogs change
-            userBlogsReference.addValueEventListener(object : ValueEventListener { // Adds a listener for data changes at the specified database reference.
-                override fun onDataChange(snapshot: DataSnapshot) { // This method is called whenever the data at the listened reference changes.
-                    val blogItems = mutableListOf<BlogItemModel>() // Creates a mutable list to store the blog items.
-                    // Iterate through the snapshot and add each blog item to the list
-                    for (blogSnapshot in snapshot.children) { // Loops through each child snapshot in the main snapshot.
-                        val blogItem = blogSnapshot.getValue(BlogItemModel::class.java) // Converts the snapshot data into a BlogItemModel object.
-                        if (blogItem != null) { // Checks if the conversion was successful.
-                            blogItems.add(blogItem) // Adds the blog item to the list.
-                        }
+    private fun fetchMyBlogs() { // EDITED: Defines a new function to fetch the user's blogs.
+        eventListener = object : ValueEventListener { // EDITED: Creates a new ValueEventListener to fetch the blog posts.
+            override fun onDataChange(snapshot: DataSnapshot) { // EDITED: This method is called whenever the data at the listened reference changes.
+                val blogItems = mutableListOf<BlogItemModel>() // EDITED: Creates a mutable list to store the blog items.
+                for (blogSnapshot in snapshot.children) { // EDITED: Loops through each child snapshot in the main snapshot.
+                    val blogItem = blogSnapshot.getValue(BlogItemModel::class.java) // EDITED: Converts the snapshot data into a BlogItemModel object.
+                    if (blogItem != null) { // EDITED: Checks if the conversion was successful.
+                        blogItems.add(blogItem) // EDITED: Adds the blog item to the list.
                     }
-                    blogItems.reverse() // Reverses the list to show the newest blogs first.
-                    
-                    BlogRepository.initializeState(blogItems) // Initializes the state of the BlogRepository with the fetched blog items.
-                    blogAdapter.submitList(blogItems) // Submits the list of blog items to the adapter to be displayed.
                 }
+                blogItems.reverse() // EDITED: Reverses the list to show the newest blogs first.
+                BlogRepository.initializeState(blogItems) // EDITED: Initializes the state of the BlogRepository with the fetched blog items.
+                blogAdapter.submitList(blogItems) // EDITED: Submits the list of blog items to the adapter to be displayed.
+            }
 
-                override fun onCancelled(error: DatabaseError) { // This method is called if the data listener is cancelled.
-                    // Handle potential database errors here
-                }
-            })
+            override fun onCancelled(error: DatabaseError) { // EDITED: This method is called if the data listener is cancelled.
+                // Handle potential database errors here
+            }
+        }
+        userBlogsReference.addValueEventListener(eventListener!!) // EDITED: Adds the event listener to the database reference.
+    }
+
+
+    override fun onPause() { // EDITED: Overrides the onPause method to remove the event listener.
+        super.onPause() // EDITED: Calls the superclass's implementation of onPause.
+        eventListener?.let { // EDITED: Checks if the event listener is not null.
+            userBlogsReference.removeEventListener(it) // EDITED: Removes the event listener to prevent memory leaks.
         }
     }
+
 
     // Observes the global interaction state for UI updates
     private fun observeInteractionState() { // Defines a private method to observe interaction state.

@@ -257,18 +257,18 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
                     val dbProfileUrl = snapshot.getValue(String::class.java) // Gets the profile image URL from the database.
                     val imageUrl = dbProfileUrl ?: user.photoUrl?.toString() // Uses the database URL or the user's photo URL.
 
-                    Glide.with(this@HomePage) // Starts a Glide request.
-                        .load(imageUrl ?: R.drawable.default_avatar) // Loads the image URL or a default avatar.
-                        .into(binding.profileImage) // Sets the image into the profile image view.
+                    Glide.with(this@HomePage) // Initializes Glide for image loading
+                        .load(imageUrl ?: R.drawable.default_avatar) // Sets the image URL to load
+                        .into(binding.profileImage) // Loads the image into the specified ImageView
                 } // Closes the onDataChange method.
 
                 override fun onCancelled(error: DatabaseError) { // Overrides the onCancelled method.
                     if (isFinishing || isDestroyed) return // Returns if the activity is finishing or destroyed.
                     // Fallback to auth profile or default
                     val imageUrl = user.photoUrl?.toString() ?: R.drawable.default_avatar // Uses the user's photo URL or a default avatar.
-                    Glide.with(this@HomePage) // Starts a Glide request.
-                        .load(imageUrl) // Loads the image URL.
-                        .into(binding.profileImage) // Sets the image into the profile image view.
+                    Glide.with(this@HomePage) // Initializes Glide for image loading
+                        .load(imageUrl) // Sets the image URL to load
+                        .into(binding.profileImage) // Loads the image into the specified ImageView
                 } // Closes the onCancelled method.
             }) // Closes the addValueEventListener block.
         } // Closes the let block.

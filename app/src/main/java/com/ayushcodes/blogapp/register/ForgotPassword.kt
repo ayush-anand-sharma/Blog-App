@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities
 import android.os.Bundle // Imports Bundle for passing data between Android components
 import androidx.activity.enableEdgeToEdge // Imports enableEdgeToEdge for edge-to-edge display
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as the base class for activities
+import cn.pedant.SweetAlert.SweetAlertDialog // Import SweetAlertDialog
 import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
 import com.ayushcodes.blogapp.databinding.ActivityForgotPasswordBinding // Imports the generated binding class for the layout
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
@@ -48,12 +49,21 @@ class ForgotPassword : AppCompatActivity() { // Defines the ForgotPassword class
                     FancyToast.makeText(this, "Please Enter Your Email", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
                     return@setOnClickListener // Returns from listener
                 }
+
+                // Show a progress dialog
+                val progressDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
+                    .setTitleText("Sending Link...")
+                progressDialog.setCancelable(false)
+                progressDialog.show()
+
                 // Send a password reset email to the provided address
                 auth.sendPasswordResetEmail(mail) // Sends password reset email
                     .addOnSuccessListener { // Adds success listener
+                        progressDialog.dismissWithAnimation() // Dismiss the progress dialog
                         FancyToast.makeText(this, "Reset Link Sent To Your Email...", FancyToast.LENGTH_SHORT, FancyToast.SUCCESS, R.mipmap.blog_app_icon_round, false).show() // Shows success toast
                     }
                     .addOnFailureListener { exception -> // Adds failure listener
+                        progressDialog.dismissWithAnimation() // Dismiss the progress dialog
                         // Handle failures during the password reset email sending process
                         when (exception) { // Switches on exception type
                             is FirebaseAuthInvalidUserException -> { // Case for invalid user

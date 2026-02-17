@@ -19,7 +19,6 @@ import com.ayushcodes.blogapp.databinding.ActivityProfilePageBinding // Imports 
 import com.ayushcodes.blogapp.main.adapters.ViewPagerAdapter // Imports ViewPagerAdapter for tabs
 import com.ayushcodes.blogapp.register.WelcomeScreen // Imports WelcomeScreen activity
 import com.bumptech.glide.Glide // Imports Glide for image loading
-import com.bumptech.glide.request.RequestOptions // Imports RequestOptions for Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -45,9 +44,11 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
 
     // Firebase Database instance for user data operations
     private lateinit var database: FirebaseDatabase // Declares FirebaseDatabase instance
-    
+
     // Google Sign-In client.
     private lateinit var googleSignInClient: GoogleSignInClient // Declares GoogleSignInClient instance
+
+    private var profileImageUrl: String? = null // EDITED: Stores the URL of the profile image.
 
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides onCreate method
@@ -73,7 +74,7 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
         // Initialize Firebase instances
         auth = FirebaseAuth.getInstance() // Gets FirebaseAuth instance
         database = FirebaseDatabase.getInstance() // Gets FirebaseDatabase instance
-        
+
         // Configure Google Sign-In options.
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) // Builds GoogleSignInOptions
             .requestIdToken(getString(R.string.default_web_client_id)) // Requests ID token using web client ID
@@ -87,6 +88,17 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
         loadUserData() // Calls loadUserData method
         // Set up click listeners for UI elements
         setupClickListeners() // Calls setupClickListeners method
+        setupProfileImageClickListener() // EDITED: Sets up the click listener for the profile image.
+    }
+
+    private fun setupProfileImageClickListener() { // EDITED: Defines a new function to set up the click listener for the profile image.
+        binding.profileImage.setOnClickListener { // EDITED: Sets a click listener on the user's profile image.
+            profileImageUrl?.let { url -> // EDITED: Checks if the profile image URL is not null.
+                val intent = Intent(this, FullScreenImageActivity::class.java) // EDITED: Creates an intent to start the FullScreenImageActivity.
+                intent.putExtra("image_url", url) // EDITED: Passes the image URL to the new activity.
+                startActivity(intent) // EDITED: Starts the activity.
+            }
+        }
     }
 
     // Configures the ViewPager and TabLayout
@@ -155,7 +167,7 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
 
                 val name = snapshot.child("name").getValue(String::class.java) // Gets name
                 val emailFromDb = snapshot.child("email").getValue(String::class.java) // Gets email
-                val profileImage = snapshot.child("profileImage").getValue(String::class.java) // Gets profile image
+                profileImageUrl = snapshot.child("profileImage").getValue(String::class.java) // EDITED: Stores the profile image URL.
                 val creationDate = snapshot.child("creationDate").getValue(String::class.java) // Gets creation date
                 val authEmail = auth.currentUser?.email // Gets auth email
 
@@ -177,25 +189,22 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
                 }
 
                 // Load profile image using Glide
-                if (!profileImage.isNullOrEmpty()) { // Checks if profile image exists
-                    Glide.with(this@ProfilePage) // Loads with Glide
-                        .load(profileImage) // Loads image
-                        .apply(RequestOptions.circleCropTransform()) // Applies circle crop
-                        .placeholder(R.drawable.default_avatar) // Sets placeholder
-                        .error(R.drawable.default_avatar) // Sets error
-                        .into(binding.profileImage) // Into profile image view
+                if (!profileImageUrl.isNullOrEmpty()) { // Checks if profile image exists
+                    Glide.with(this@ProfilePage)
+                        .load(profileImageUrl) // Sets the image URL to load
+                        .placeholder(R.drawable.default_avatar) // Displays a default image while loading
+                        .error(R.drawable.default_avatar) // Displays a default image if loading fails
+                        .into(binding.profileImage) // Loads the image into the specified ImageView
                 } else { // Executed if no profile image
                      auth.currentUser?.photoUrl?.let { // Checks auth photo URL
-                        Glide.with(this@ProfilePage) // Loads with Glide
-                            .load(it) // Loads URL
-                            .apply(RequestOptions.circleCropTransform()) // Applies circle crop
-                            .placeholder(R.drawable.default_avatar) // Sets placeholder
-                            .error(R.drawable.default_avatar) // Sets error
-                            .into(binding.profileImage) // Into profile image view
-                     } ?: Glide.with(this@ProfilePage) // Executed if no auth photo
-                         .load(R.drawable.default_avatar) // Loads default avatar
-                         .apply(RequestOptions.circleCropTransform()) // Applies circle crop
-                         .into(binding.profileImage) // Into profile image view
+                        Glide.with(this@ProfilePage)
+                            .load(it) // Sets the image URL to load
+                            .placeholder(R.drawable.default_avatar) // Displays a default image while loading
+                            .error(R.drawable.default_avatar) // Displays a default image if loading fails
+                            .into(binding.profileImage) // Loads the image into the specified ImageView
+                     } ?: Glide.with(this@ProfilePage)
+                         .load(R.drawable.default_avatar) // Sets the default image to load
+                         .into(binding.profileImage) // Loads the image into the specified ImageView
                 }
                 binding.progressBar.visibility = View.GONE // Hides progress bar
             }

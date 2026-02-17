@@ -19,7 +19,6 @@ import com.ayushcodes.blogapp.databinding.ActivityReadMoreBinding // Imports gen
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports BlogItemModel data class
 import com.ayushcodes.blogapp.repository.BlogRepository
 import com.bumptech.glide.Glide // Imports Glide for image loading
-import com.bumptech.glide.request.RequestOptions // Imports RequestOptions for Glide
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for authentication
 import com.shashank.sony.fancytoastlib.FancyToast // Imports FancyToast for custom toasts
 import kotlinx.coroutines.launch // Imports launch for starting coroutines
@@ -89,12 +88,11 @@ class ReadMore : AppCompatActivity() { // Defines ReadMore class inheriting from
 
         // Load the author's profile image
         val userImageUrl = blogItem!!.profileImage // Gets profile image URL
-        Glide.with(this) // Loads with Glide
-            .load(userImageUrl) // Loads URL
-            .apply(RequestOptions.circleCropTransform()) // Applies circle crop
-            .placeholder(R.drawable.default_avatar) // Sets placeholder
-            .error(R.drawable.default_avatar) // Sets error image
-            .into(binding.profileImage) // Into profile image view
+        Glide.with(this) // Initializes Glide for image loading
+            .load(userImageUrl) // Sets the image URL to load
+            .placeholder(R.drawable.default_avatar) // Displays a default image while loading
+            .error(R.drawable.default_avatar) // Displays a default image if loading fails
+            .into(binding.profileImage) // Loads the image into the specified ImageView
 
         val blogId = blogItem!!.blogId!! // Gets blog ID
 

@@ -12,7 +12,6 @@ import com.ayushcodes.blogapp.databinding.BlogItemBinding // Imports the generat
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports the data model for blog items
 import com.ayushcodes.blogapp.model.PostInteractionState // Imports the model for interaction state (likes, saves)
 import com.bumptech.glide.Glide // Imports Glide for image loading
-import com.bumptech.glide.request.RequestOptions // Imports RequestOptions for Glide configuration
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
 
 // Handles global like/save state synchronization across all screens
@@ -64,12 +63,11 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
                 date.text = blogItem.date // Sets the date text
                 blogPost.text = blogItem.blogPost // Sets the blog post text
 
-                Glide.with(profile.context) // Initiates Glide with the profile view's context
-                    .load(blogItem.profileImage) // Loads the profile image URL
-                    .apply(RequestOptions.circleCropTransform()) // Applies a circle crop transformation
-                    .placeholder(R.drawable.default_avatar) // Sets a placeholder image
-                    .error(R.drawable.default_avatar) // Sets an error image
-                    .into(profile) // Loads the image into the profile ImageView
+                Glide.with(profile.context) // Initializes Glide for image loading
+                    .load(blogItem.profileImage) // Sets the image URL to load
+                    .placeholder(R.drawable.default_avatar) // Displays a default image while loading
+                    .error(R.drawable.default_avatar) // Displays a default image if loading fails
+                    .into(profile) // Loads the image into the specified ImageView
 
                 readMoreButton.setOnClickListener { onReadMoreClick(blogItem) } // Sets click listener for "Read More"
 

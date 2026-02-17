@@ -91,7 +91,7 @@ class LikedBlogsFragment : Fragment() { // Defines LikedBlogsFragment class inhe
         if (userId != null) { // Checks if user ID is not null
             val likedBlogsReference = database.reference.child("users").child(userId).child("likedBlogs") // References likedBlogs node
             // Attach a listener to get updates when the liked blogs change
-            likedBlogsReference.addValueEventListener(object : ValueEventListener { // Adds ValueEventListener
+            likedBlogsReference.addListenerForSingleValueEvent(object : ValueEventListener { // Adds single value listener
                 override fun onDataChange(snapshot: DataSnapshot) { // Called when data changes
                     val newLikedItems = mutableListOf<BlogItemModel>() // Creates mutable list for items
                     val pendingCount = snapshot.childrenCount // Gets count of children
