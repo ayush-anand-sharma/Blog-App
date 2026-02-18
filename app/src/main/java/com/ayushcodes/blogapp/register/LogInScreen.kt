@@ -125,7 +125,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                                     showToast("This Email is not Registered", FancyToast.ERROR) // Shows email not registered toast
                                 }
                                 is FirebaseAuthInvalidCredentialsException -> { // If the password is incorrect
-                                    showToast("Incorrect Password, Please Try Again.", FancyToast.ERROR) // Shows incorrect password toast
+                                    showToast("Incorrect Email or Password, Please Try Again.", FancyToast.ERROR) // Shows incorrect email and password toast
                                 }
                                 is FirebaseNetworkException -> { // If there is a network error
                                     showToast("Network Connection Error", FancyToast.ERROR) // Shows network error toast
