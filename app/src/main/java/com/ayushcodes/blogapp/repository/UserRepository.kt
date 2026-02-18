@@ -59,7 +59,7 @@ class UserRepository { // A repository class to handle user data.
             storageRef.putFile(newImageUri).addOnSuccessListener { // Upload the new image and add a success listener.
                 storageRef.downloadUrl.addOnSuccessListener { downloadUrl -> // On successful upload, get the download URL for the image.
                     val newImageUrl = downloadUrl.toString() // Get the new image URL.
-                    if (oldImageUrl != null && oldImageUrl.isNotEmpty()) { // Check if there is an old image URL.
+                    if (!oldImageUrl.isNullOrEmpty()) { // Check if there is an old image URL.
                         try { // Add a try-catch block to prevent crashes if the URL is invalid.
                             FirebaseStorage.getInstance().getReferenceFromUrl(oldImageUrl).delete() // Delete the old profile picture from Firebase Storage.
                         } catch (e: Exception) { // Catch any exceptions that occur.

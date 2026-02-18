@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as 
 import com.ayushcodes.blogapp.R // Imports R class for resources
 import com.ayushcodes.blogapp.databinding.ActivityAddArticleBinding // Imports generated binding class
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports BlogItemModel data class
+import com.ayushcodes.blogapp.model.UserData
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for authentication
 import com.google.firebase.database.DataSnapshot // Imports DataSnapshot for reading data
 import com.google.firebase.database.DatabaseError // Imports DatabaseError for handling errors
@@ -31,13 +32,13 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
 
     // Firebase Authentication instance to manage user authentication
     private val auth = FirebaseAuth.getInstance() // Gets FirebaseAuth instance
-    
+
     // Firebase Database instance to interact with Realtime Database
     private val database = FirebaseDatabase.getInstance() // Gets FirebaseDatabase instance
 
     // Called when the activity is starting
     override fun onCreate(savedInstanceState: Bundle?) { // Overrides onCreate method
-        super.onCreate(savedInstanceState) // Calls superclass onCreate
+        super.onCreate(savedInstanceState)
         enableEdgeToEdge() // Enables edge-to-edge display
 
         // If the user is offline, show a toast and finish the activity before setting the content view.
@@ -76,38 +77,33 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
             showToast("User not logged in!", FancyToast.ERROR) // Shows error toast
             return // Returns from function
         }
-        
+
         // Show progress bar immediately
         binding.progressBar.visibility = View.VISIBLE // Shows progress bar
         binding.addBlogButton.isEnabled = false // Disables add blog button
 
         val userId = user.uid // Gets user ID
-        // Fetch the correct profile image from Database (Source of Truth) to support both Email and Google users
-        database.getReference("users").child(userId).child("profileImage") // References profileImage node
-            .addListenerForSingleValueEvent(object : ValueEventListener { // Adds single value event listener
-                override fun onDataChange(snapshot: DataSnapshot) { // Called when data is received
-                    // Get image from DB, fallback to Auth photo, fallback to empty string
-                    val dbProfileImage = snapshot.getValue(String::class.java) // Gets profile image from snapshot
-                    val profileImage = if (!dbProfileImage.isNullOrEmpty()) { // Checks if DB image is valid
-                        dbProfileImage // Uses DB image
-                    } else { // Executed if DB image is invalid
-                        user.photoUrl?.toString() ?: "" // Uses auth photo URL or empty string
-                    }
+        database.getReference("users").child(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val userData = snapshot.getValue(UserData::class.java)
+                    val userName = userData?.name ?: user.displayName ?: "Anonymous"
+                    val userProfileImage = userData?.profileImage ?: user.photoUrl?.toString() ?: ""
 
-                    proceedWithUpload(user.uid, user.displayName, profileImage, title, description) // Calls proceedWithUpload
+                    proceedWithUpload(userId, userName, userProfileImage, title, description)
                 }
 
-                override fun onCancelled(error: DatabaseError) { // Called if database error occurs
-                    // Fallback to Auth photo if DB read fails (rare)
-                    val profileImage = user.photoUrl?.toString() ?: "" // Uses auth photo URL or empty string
-                    proceedWithUpload(user.uid, user.displayName, profileImage, title, description) // Calls proceedWithUpload
+                override fun onCancelled(error: DatabaseError) {
+                    // Fallback to Auth data if DB read fails
+                    val userName = user.displayName ?: "Anonymous"
+                    val userProfileImage = user.photoUrl?.toString() ?: ""
+                    proceedWithUpload(userId, userName, userProfileImage, title, description)
                 }
             })
     }
 
     // Uploads the blog data to Firebase Database
-    private fun proceedWithUpload(userId: String, displayName: String?, profileImage: String, title: String, description: String) { // Defines function to upload data
-        val fullName = displayName ?: "Anonymous" // Gets display name or default
+    private fun proceedWithUpload(userId: String, displayName: String, profileImage: String, title: String, description: String) { // Defines function to upload data
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) // Formats current date
 
         // Generate a new key for the blog post
@@ -121,11 +117,11 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
         }
 
         // Create a BlogItemModel object
-        val blogItem = BlogItemModel( // Creates BlogItemModel instance
+        val blogItem = BlogItemModel(
             blogId = newBlogKey, // Sets blog ID
             userId = userId, // Sets user ID
             heading = title, // Sets title
-            fullName = fullName, // Sets full name
+            fullName = displayName, // Sets full name
             date = currentDate, // Sets date
             blogPost = description, // Sets description
             likeCount = 0, // Sets like count
@@ -139,14 +135,14 @@ class AddArticle : AppCompatActivity() { // Defines AddArticle class inheriting 
         )
 
         // Fire and forget upload
-        database.reference.updateChildren(childUpdates) // Updates children in database
-            .addOnFailureListener { // Adds failure listener
+        database.reference.updateChildren(childUpdates)
+            .addOnFailureListener {
                 // Logs or silent failure handling if needed
             }
 
         // Optimistic UI: Assume success and close immediately
         showToast("Blog uploading...", FancyToast.INFO) // Shows info toast
-        
+
         val intent = Intent(this@AddArticle, HomePage::class.java) // Creates intent for HomePage
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK) // Adds flags to clear stack
         startActivity(intent) // Starts HomePage activity

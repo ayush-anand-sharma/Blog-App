@@ -10,6 +10,7 @@ import android.view.LayoutInflater // Imports LayoutInflater to inflate XML layo
 import android.view.View // Imports View class for UI elements
 import android.view.ViewGroup // Imports ViewGroup as the base class for layouts
 import androidx.fragment.app.Fragment // Imports Fragment class
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope // Imports lifecycleScope for managing coroutines
 import androidx.recyclerview.widget.LinearLayoutManager // Imports LinearLayoutManager for arranging RecyclerView items
 import cn.pedant.SweetAlert.SweetAlertDialog // Imports SweetAlertDialog for nice alerts
@@ -18,6 +19,7 @@ import com.ayushcodes.blogapp.adapter.BlogAdapter // Imports the custom adapter 
 import com.ayushcodes.blogapp.databinding.FragmentMyBlogsBinding // Imports the generated binding class for the layout
 import com.ayushcodes.blogapp.main.EditBlogActivity // EDITED: Imports EditBlogActivity for handling blog edits.
 import com.ayushcodes.blogapp.main.ReadMore // Imports ReadMore activity
+import com.ayushcodes.blogapp.main.SharedViewModel
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports the data model for blog items
 import com.ayushcodes.blogapp.repository.BlogRepository // Imports the repository for data operations
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
@@ -38,6 +40,7 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
     // Firebase Authentication and Database instances
     private lateinit var auth: FirebaseAuth // Declares a private lateinit variable for FirebaseAuth.
     private lateinit var database: FirebaseDatabase // Declares a private lateinit variable for FirebaseDatabase.
+    private val sharedViewModel: SharedViewModel by activityViewModels() // Get a reference to the SharedViewModel using the activityViewModels delegate.
 
     // Adapter for the RecyclerView
     private lateinit var blogAdapter: BlogAdapter // Declares a private lateinit variable for the BlogAdapter.
@@ -104,6 +107,16 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
 
         observeInteractionState() // Calls the method to start observing UI interaction state.
         fetchMyBlogs() // Fetches the blogs to ensure the list is up-to-date.
+        observeProfileUpdates() // Observe the SharedViewModel for profile updates.
+    }
+
+    private fun observeProfileUpdates() { // Defines a new function to observe profile updates from the SharedViewModel.
+        sharedViewModel.profileUpdated.observe(viewLifecycleOwner) { updated -> // Observe the profileUpdated LiveData from the SharedViewModel.
+            if (updated) { // If a profile update has been notified.
+                fetchMyBlogs() // Refresh the list of blogs.
+                sharedViewModel.onProfileUpdateNotified() // Reset the LiveData to avoid repeated refreshes.
+            }
+        }
     }
 
     private fun fetchMyBlogs() { // EDITED: Defines a new function to fetch the user's blogs.

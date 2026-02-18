@@ -7,11 +7,13 @@ import android.view.LayoutInflater // Imports LayoutInflater to inflate XML layo
 import android.view.View // Imports View class for UI elements
 import android.view.ViewGroup // Imports ViewGroup as the base class for layouts
 import androidx.fragment.app.Fragment // Imports Fragment class
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope // Imports lifecycleScope for managing coroutines
 import androidx.recyclerview.widget.LinearLayoutManager // Imports LinearLayoutManager for arranging RecyclerView items
 import com.ayushcodes.blogapp.adapter.BlogAdapter // Imports the custom adapter for the blog list
 import com.ayushcodes.blogapp.databinding.FragmentLikedBlogsBinding // Imports the generated binding class for the layout
 import com.ayushcodes.blogapp.main.ReadMore // Imports ReadMore activity
+import com.ayushcodes.blogapp.main.SharedViewModel
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports the data model for blog items
 import com.ayushcodes.blogapp.repository.BlogRepository // Imports the repository for data operations
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
@@ -26,6 +28,7 @@ class LikedBlogsFragment : Fragment() { // Defines LikedBlogsFragment class inhe
 
     // Lazily initialize view binding for the fragment layout
     private lateinit var binding: FragmentLikedBlogsBinding // Declares binding variable
+    private val sharedViewModel: SharedViewModel by activityViewModels() // Get a reference to the SharedViewModel.
 
     // Firebase Authentication instance to manage user authentication
     private lateinit var auth: FirebaseAuth // Declares FirebaseAuth instance
@@ -85,8 +88,20 @@ class LikedBlogsFragment : Fragment() { // Defines LikedBlogsFragment class inhe
         }
 
         observeInteractionState() // Calls observeInteractionState
+        fetchLikedBlogs() // Fetch the liked blogs when the view is created.
+        observeProfileUpdates() // Observe the SharedViewModel for profile updates.
+    }
 
-        // Fetch the list of liked blogs for the current user from Firebase
+    private fun observeProfileUpdates() { // Defines a new function to observe profile updates.
+        sharedViewModel.profileUpdated.observe(viewLifecycleOwner) { updated -> // Observe the profileUpdated LiveData from the SharedViewModel.
+            if (updated) { // If the profile has been updated.
+                fetchLikedBlogs() // Refresh the list of liked blogs.
+                sharedViewModel.onProfileUpdateNotified() // Reset the LiveData to avoid repeated refreshes.
+            }
+        }
+    }
+
+    private fun fetchLikedBlogs() { // Defines a new function to fetch liked blogs.
         val userId = auth.currentUser?.uid // Gets current user ID
         if (userId != null) { // Checks if user ID is not null
             binding.progressBar.visibility = View.VISIBLE // Show the progress bar while loading.

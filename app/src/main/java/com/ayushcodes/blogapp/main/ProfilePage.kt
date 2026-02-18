@@ -10,6 +10,7 @@ import android.net.NetworkCapabilities // Imports NetworkCapabilities to check n
 import android.os.Bundle // Imports Bundle to pass data between components
 import android.view.View // Imports View class for UI elements
 import androidx.activity.enableEdgeToEdge // Imports enableEdgeToEdge for edge-to-edge display
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as base class
 import androidx.core.view.ViewCompat // Imports ViewCompat for compatibility
 import androidx.core.view.WindowInsetsCompat // Imports WindowInsetsCompat for window insets
@@ -38,6 +39,7 @@ import java.util.Locale // Imports Locale class
 class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheriting from AppCompatActivity
 
     private lateinit var binding: ActivityProfilePageBinding // Declares binding variable
+    private val sharedViewModel: SharedViewModel by viewModels() // Get a reference to the SharedViewModel.
 
     // Firebase Authentication instance to manage user login
     private lateinit var auth: FirebaseAuth // Declares FirebaseAuth instance
@@ -92,6 +94,7 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
     override fun onResume() { // Add onResume lifecycle method to refresh data when the screen becomes visible.
         super.onResume() // Call the superclass's onResume method.
         loadUserData() // Load user data every time the activity resumes to ensure it's up-to-date.
+        sharedViewModel.notifyProfileUpdated() // Notify the fragments that the profile data has been updated.
     }
 
     private fun setupProfileImageClickListener() { // EDITED: Defines a new function to set up the click listener for the profile image.
