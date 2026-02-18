@@ -11,6 +11,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle // Imports Bundle for passing data between Android components
 import android.text.InputType // Imports InputType for configuring EditText input types
+import android.util.Patterns // Imports Patterns for email validation
 import android.view.View // Imports View class for UI elements
 import androidx.activity.result.contract.ActivityResultContracts // Imports ActivityResultContracts for handling activity results
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as the base class for activities
@@ -26,7 +27,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn // Imports GoogleSign
 import com.google.android.gms.auth.api.signin.GoogleSignInClient // Imports GoogleSignInClient class
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions // Imports GoogleSignInOptions class
 import com.google.android.gms.common.api.ApiException // Imports ApiException class for Google API errors
+import com.google.firebase.FirebaseNetworkException // Imports FirebaseNetworkException for handling network errors
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException // Imports exception for invalid credentials
+import com.google.firebase.auth.FirebaseAuthInvalidUserException // Imports exception for invalid user
 import com.google.firebase.auth.FirebaseUser // Imports FirebaseUser for user details
 import com.google.firebase.auth.GoogleAuthProvider // Imports GoogleAuthProvider for Google credential handling
 import com.google.firebase.storage.FirebaseStorage // Imports FirebaseStorage for accessing Firebase Storage
@@ -90,16 +94,21 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
         // Handle login button click.
         binding.loginButton.setOnClickListener { // Sets OnClickListener for login button
             if (isNetworkAvailable()) { // Checks for a network connection.
-                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
-                val email = binding.email.text.toString() // Gets the email text
-                val password = binding.password.text.toString() // Gets the password text
+                val email = binding.email.text.toString().trim() // Gets and trims the email text
+                val password = binding.password.text.toString().trim() // Gets and trims the password text
 
                 // Validate email and password inputs.
                 if (email.isEmpty() || password.isEmpty()) { // Checks if email or password is empty
-                    binding.progressBar.visibility = View.GONE // Hides the progress bar
-                    FancyToast.makeText(this, "Please fill all the details", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                    showToast("Please fill all the details", FancyToast.ERROR) // Shows error toast
                     return@setOnClickListener // Returns from listener
                 }
+
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { // Checks for valid email format
+                    showToast("Please enter a valid email.", FancyToast.ERROR) // Shows invalid email toast
+                    return@setOnClickListener // Exits the listener
+                }
+
+                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
 
                 // Attempt to sign in with email and password using Firebase Auth.
                 auth.signInWithEmailAndPassword(email, password) // Signs in with email and password
@@ -111,11 +120,24 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                             startActivity(Intent(this, HomePage::class.java)) // Starts HomePage activity
                             finishAffinity() // Finishes all activities in the task
                         } else { // Executed if sign-in failed
-                            FancyToast.makeText(this, "Your Email Or Password is Incorrect..", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                            when (task.exception) { // Checks the type of exception
+                                is FirebaseAuthInvalidUserException -> { // If the email is not registered
+                                    showToast("This Email is not Registered", FancyToast.ERROR) // Shows email not registered toast
+                                }
+                                is FirebaseAuthInvalidCredentialsException -> { // If the password is incorrect
+                                    showToast("Incorrect Password, Please Try Again.", FancyToast.ERROR) // Shows incorrect password toast
+                                }
+                                is FirebaseNetworkException -> { // If there is a network error
+                                    showToast("Network Connection Error", FancyToast.ERROR) // Shows network error toast
+                                }
+                                else -> { // For any other error
+                                    showToast("Login Failed.", FancyToast.ERROR) // Shows a generic error toast
+                                }
+                            }
                         }
                     }
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
 
@@ -126,7 +148,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                 val signInIntent = googleSignInClient.signInIntent // Gets the sign-in intent
                 launcher.launch(signInIntent) // Launches the sign-in intent
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
 
@@ -141,7 +163,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
             if (isNetworkAvailable()) { // Checks for a network connection.
                 startActivity(Intent(this, ForgotPassword::class.java)) // Starts ForgotPassword activity
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
     }
@@ -181,11 +203,11 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                                 }
                             }
                         } else { // Executed if sign-in failed
-                            handleSignInFailure() // Handles sign-in failure
+                            handleSignInFailure(it.exception) // Handles sign-in failure with exception
                         }
                     }
             } catch (e: ApiException) { // Catches ApiException
-                handleSignInFailure() // Handles sign-in failure
+                handleSignInFailure(e) // Handles sign-in failure with exception
             }
         } else { // Executed if result is not OK
             handleSignInFailure() // Handles sign-in failure
@@ -242,10 +264,14 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
     }
 
     // Handle failures during the sign-in process.
-    private fun handleSignInFailure() { // Defines failure handling function
+    private fun handleSignInFailure(exception: Exception? = null) { // Defines failure handling function with an optional exception parameter
         if (isFinishing || isDestroyed) return // Don't proceed if the activity is no longer active.
         binding.progressBar.visibility = View.GONE // Hides progress bar
-        FancyToast.makeText(this, "Google Sign-In Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+        when (exception) { // Checks the type of exception
+            is FirebaseNetworkException, is ApiException -> { // If there is a network error or Google API error
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows network error toast
+            }
+        }
     }
 
     // Checks for network connectivity.

@@ -12,6 +12,7 @@ import android.net.Uri // Imports Uri for handling image URIs
 import android.os.Bundle // Imports Bundle for passing data between Android components
 import android.provider.MediaStore // Imports MediaStore for accessing media content
 import android.text.InputType // Imports InputType for configuring EditText input types
+import android.util.Patterns // Imports Patterns for email validation
 import android.view.View // Imports View class for UI elements
 import androidx.activity.result.contract.ActivityResultContracts // Imports ActivityResultContracts for handling activity results
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as the base class for activities
@@ -20,7 +21,9 @@ import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
 import com.ayushcodes.blogapp.databinding.ActivityRegisterPageBinding // Imports the generated binding class for the layout
 import com.ayushcodes.blogapp.main.HomePage // Imports the HomePage activity
 import com.ayushcodes.blogapp.repository.UserRepository // Import the UserRepository to handle user data operations.
+import com.google.firebase.FirebaseNetworkException // Imports FirebaseNetworkException for handling network errors
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException // Imports exception for weak password
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest // Imports UserProfileChangeRequest for updating user profile
 import com.google.firebase.storage.FirebaseStorage // Imports FirebaseStorage for accessing Firebase Storage
@@ -107,38 +110,51 @@ class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inh
         // Handle user registration when the register button is clicked
         binding.registerButton.setOnClickListener { // Sets OnClickListener for the register button
             if (isNetworkAvailable()) { // Checks for a network connection.
-                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
-                val name = binding.name.text.toString().trim() // Gets the name text
-                val email = binding.email.text.toString().trim() // Gets the email text
-                val password = binding.password.text.toString().trim() // Gets the password text
+                val name = binding.name.text.toString().trim() // Gets and trims the name text
+                val email = binding.email.text.toString().trim() // Gets and trims the email text
+                val password = binding.password.text.toString().trim() // Gets and trims the password text
 
                 // Validate that all required fields are filled
                 if (name.isEmpty() || email.isEmpty() || password.isEmpty()) { // Checks if any field is empty
-                    binding.progressBar.visibility = View.GONE // Hides the progress bar
-                    FancyToast.makeText(this, "Please fill all the details", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                    showToast("Please fill all the details", FancyToast.ERROR) // Shows error toast
                     return@setOnClickListener // Returns from listener
                 }
+
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { // Checks for valid email format
+                    showToast("Please, Enter a valid email.", FancyToast.ERROR) // Shows invalid email toast
+                    return@setOnClickListener // Exits the listener
+                }
+
+                binding.progressBar.visibility = View.VISIBLE // Shows the progress bar
 
                 // Create a new user with email and password using Firebase Authentication
                 auth.createUserWithEmailAndPassword(email, password) // Creates user with email and password
                     .addOnCompleteListener(this) { task -> // Adds completion listener
                         if (isFinishing || isDestroyed) return@addOnCompleteListener // Don't proceed if the activity is no longer active.
+                        binding.progressBar.visibility = View.GONE // Hides the progress bar
                         if (task.isSuccessful) { // Checks if registration was successful
                             val user = auth.currentUser // Gets the current user
                             if (user == null) { // If the user is null, something went wrong.
-                                binding.progressBar.visibility = View.GONE // Hide the progress bar.
-                                FancyToast.makeText(this, "Registration Failed: User not found.", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Show an error toast.
+                                showToast("Registration Failed: User not found.", FancyToast.ERROR) // Show an error toast.
                                 return@addOnCompleteListener // Return from the listener.
                             }
                             updateUserProfileAndSaveData(user, name, email) // Update the user profile and save the data.
                         } else { // Executed if registration failed
-                            // Handle registration failure
-                            binding.progressBar.visibility = View.GONE // Hides the progress bar
-                            FancyToast.makeText(this, "Registration Failed: ${task.exception?.message}", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+                            when (task.exception) { // Checks the type of exception
+                                is FirebaseAuthWeakPasswordException -> { // If the password is too short
+                                    showToast("Password is too short, please use at least 6 characters", FancyToast.ERROR) // Shows weak password toast
+                                }
+                                is FirebaseNetworkException -> { // If there is a network error
+                                    showToast("Check your internet connection and try again", FancyToast.ERROR) // Shows network error toast
+                                }
+                                else -> { // For any other error
+                                    showToast("Registration Failed.", FancyToast.ERROR) // Shows a generic error toast
+                                }
+                            }
                         }
                     }
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Check your internet connection and try again", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
 
@@ -148,7 +164,7 @@ class RegisterPage : AppCompatActivity() { // Defines the RegisterPage class inh
                 startActivity(Intent(this, LogInScreen::class.java)) // Starts LogInScreen activity
                 finish() // Finishes the current activity
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Check your internet connection and try again", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
     }

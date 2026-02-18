@@ -27,6 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.FirebaseNetworkException // Imports FirebaseNetworkException for handling network errors
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
@@ -76,7 +77,7 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
                 val signInIntent = googleSignInClient.signInIntent // Gets the sign-in intent
                 launcher.launch(signInIntent) // Launches the sign-in intent
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
 
@@ -85,7 +86,7 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
             if (isNetworkAvailable()) { // Checks for a network connection.
                 startActivity(Intent(this, LogInScreen::class.java)) // Starts LogInScreen activity
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
 
@@ -94,7 +95,7 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
             if (isNetworkAvailable()) { // Checks for a network connection.
                 startActivity(Intent(this, RegisterPage::class.java)) // Starts RegisterPage activity
             } else { // If offline.
-                showToast("Please check your internet connection.", FancyToast.INFO) // Shows a toast message.
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows a toast message for network error.
             }
         }
 
@@ -152,11 +153,11 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
                                 }
                             }
                         } else { // Executed if sign-in failed
-                            handleSignInFailure() // Handles sign-in failure
+                            handleSignInFailure(it.exception) // Handles sign-in failure with exception
                         }
                     }
             } catch (e: ApiException) { // Catches ApiException
-                handleSignInFailure() // Handles sign-in failure
+                handleSignInFailure(e) // Handles sign-in failure with exception
             }
         } else { // Executed if result is not OK
             handleSignInFailure() // Handles sign-in failure
@@ -213,10 +214,14 @@ class WelcomeScreen : AppCompatActivity() { // Defines the WelcomeScreen class i
     }
 
     // Handles sign-in failures by hiding the progress bar and showing an error toast
-    private fun handleSignInFailure() { // Defines failure handling function
+    private fun handleSignInFailure(exception: Exception? = null) { // Defines failure handling function with an optional exception parameter
         if (isFinishing || isDestroyed) return // Don't proceed if the activity is no longer active.
         binding.progressBar.visibility = View.GONE // Hides progress bar
-        FancyToast.makeText(this, "Google Sign-In Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
+        when (exception) { // Checks the type of exception
+            is FirebaseNetworkException, is ApiException -> { // If there is a network error or Google API error
+                showToast("Network Connection Error", FancyToast.ERROR) // Shows network error toast
+            }
+        }
     }
 
     // Checks for network connectivity.
