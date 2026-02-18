@@ -1,34 +1,34 @@
 package com.ayushcodes.blogapp.main // Defines the package name for this file
 
 // Import necessary Android and library classes
-import android.content.BroadcastReceiver // Imports BroadcastReceiver for handling system broadcasts
-import android.content.Context // Imports Context to access application environment
-import android.content.Intent // Imports Intent to launch activities
-import android.content.IntentFilter // Imports IntentFilter for filtering broadcasts
-import android.net.ConnectivityManager // Imports ConnectivityManager to handle network connections
-import android.net.NetworkCapabilities // Imports NetworkCapabilities to check network capabilities
-import android.os.Bundle // Imports Bundle to pass data between components
-import android.view.View // Imports the View class for UI elements.
-import androidx.appcompat.widget.SearchView // Imports SearchView for search functionality
-import androidx.activity.OnBackPressedCallback // Imports OnBackPressedCallback for handling back presses
-import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as base class
-import androidx.lifecycle.lifecycleScope // Imports lifecycleScope for managing coroutines
-import androidx.recyclerview.widget.LinearLayoutManager // Imports LinearLayoutManager for arranging RecyclerView items
-import cn.pedant.SweetAlert.SweetAlertDialog // Imports SweetAlertDialog for nice alerts
-import com.ayushcodes.blogapp.R // Imports R class for resources
-import com.ayushcodes.blogapp.adapter.BlogAdapter // Imports BlogAdapter for RecyclerView
-import com.ayushcodes.blogapp.databinding.ActivityHomePageBinding // Imports generated binding class
-import com.ayushcodes.blogapp.model.BlogItemModel // Imports BlogItemModel data class
-import com.ayushcodes.blogapp.repository.BlogRepository // Imports BlogRepository for data operations
-import com.bumptech.glide.Glide // Imports Glide for image loading
-import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for authentication
-import com.google.firebase.database.DataSnapshot // Imports DataSnapshot for reading data
-import com.google.firebase.database.DatabaseError // Imports DatabaseError for handling errors
-import com.google.firebase.database.FirebaseDatabase // Imports FirebaseDatabase for database access
-import com.google.firebase.database.Query // Imports Query for creating specific database queries
-import com.google.firebase.database.ValueEventListener // Imports ValueEventListener for data changes
-import com.shashank.sony.fancytoastlib.FancyToast // Imports FancyToast for custom toasts
-import kotlinx.coroutines.launch // Imports launch for starting coroutines
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Bundle
+import android.view.View
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import cn.pedant.SweetAlert.SweetAlertDialog
+import com.ayushcodes.blogapp.R
+import com.ayushcodes.blogapp.adapter.BlogAdapter
+import com.ayushcodes.blogapp.databinding.ActivityHomePageBinding
+import com.ayushcodes.blogapp.model.BlogItemModel
+import com.ayushcodes.blogapp.repository.BlogRepository
+import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.Query
+import com.google.firebase.database.ValueEventListener
+import com.shashank.sony.fancytoastlib.FancyToast
+import kotlinx.coroutines.launch
 
 // Main activity of the app, displaying the feed of blog posts.
 @Suppress("DEPRECATION") // Suppresses deprecation warnings for this class
@@ -45,7 +45,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
 
     // Firebase Authentication instance for managing user login state
     private lateinit var auth: FirebaseAuth // Declares FirebaseAuth instance
-    
+
     // Firebase Database instance for realtime data operations
     private lateinit var database: FirebaseDatabase // Declares FirebaseDatabase instance
 
@@ -54,7 +54,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
 
     // Firebase database query for the "blogs" node
     private lateinit var blogsQuery: Query // Declares Query for blogs
-    
+
     // Listener for changes in the "blogs" node
     private var blogListener: ValueEventListener? = null // Declares ValueEventListener for blogs, nullable
 
@@ -137,7 +137,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
             }
             isOffline = false // Sets the offline flag to false.
         } // Closes the if-else block.
-        
+
         loadUserProfile() // Calls the method to load the user profile.
         attachListeners() // Calls the method to attach Firebase listeners.
     } // Closes the onResume method.
@@ -187,7 +187,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
             layoutManager = LinearLayoutManager(this@HomePage) // Sets LayoutManager
         } // Closes the apply block.
     } // Closes the setupRecyclerView method.
-    
+
     // Observes the global interaction state for UI updates
     private fun observeInteractionState() { // Defines observeInteractionState method
         lifecycleScope.launch { // Launches coroutine
@@ -214,7 +214,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
                 } // Closes the synchronized block.
 
                 BlogRepository.initializeState(newItems) // Initializes the repository state with the new items.
-                
+
                 // Re-apply the current search filter to the new data
                 val currentQuery = binding.searchBlock.query?.toString() // Gets the current search query.
                 filterBlogs(currentQuery, showToastIfEmpty = false) // Filters the blogs based on the query.
@@ -235,7 +235,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
             } // Closes the onCancelled method.
         } // Closes the ValueEventListener object.
     } // Closes the setupFirebaseListeners method.
-    
+
     // Attaches the Firebase listeners to the database query
     private fun attachListeners() { // Defines attachListeners method
         blogListener?.let { blogsQuery.addValueEventListener(it) } // Adds listener if not null
@@ -244,7 +244,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
     // Detaches the Firebase listeners
     private fun detachListeners() { // Defines detachListeners method
         blogListener?.let { blogsQuery.removeEventListener(it) } // Removes listener if not null
-    } // Closes the attachListeners method.
+    } // Closes the detachListeners method.
 
     // Loads the user's profile image from Firebase
     private fun loadUserProfile() { // Defines the loadUserProfile method.
@@ -339,7 +339,7 @@ class HomePage : AppCompatActivity() { // Defines HomePage class inheriting from
                 return true // Returns true to indicate the change has been handled.
             } // Closes the onQueryTextChange method.
         }) // Closes the setOnQueryTextListener block.
-    } // Closes the setupSearchListener method.
+    } // Clses the setupSearchListener method.
 
     // Filter blogs based on search query
     private fun filterBlogs(query: String?, showToastIfEmpty: Boolean = true) { // Defines the filterBlogs method.

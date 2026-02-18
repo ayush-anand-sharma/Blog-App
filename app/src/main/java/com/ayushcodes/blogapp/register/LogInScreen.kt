@@ -14,10 +14,11 @@ import android.text.InputType // Imports InputType for configuring EditText inpu
 import android.view.View // Imports View class for UI elements
 import androidx.activity.result.contract.ActivityResultContracts // Imports ActivityResultContracts for handling activity results
 import androidx.appcompat.app.AppCompatActivity // Imports AppCompatActivity as the base class for activities
+import androidx.lifecycle.lifecycleScope
 import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
 import com.ayushcodes.blogapp.databinding.ActivityLogInScreenBinding // Imports the generated binding class for the layout
 import com.ayushcodes.blogapp.main.HomePage // Imports the HomePage activity
-import com.ayushcodes.blogapp.model.UserData // Imports the UserData model class
+import com.ayushcodes.blogapp.repository.UserRepository // Import the UserRepository to handle user data operations.
 import com.bumptech.glide.Glide // Imports Glide for image loading
 import com.bumptech.glide.request.target.CustomTarget // Imports CustomTarget for Glide callbacks
 import com.bumptech.glide.request.transition.Transition // Imports Transition for Glide animations
@@ -28,13 +29,10 @@ import com.google.android.gms.common.api.ApiException // Imports ApiException cl
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
 import com.google.firebase.auth.FirebaseUser // Imports FirebaseUser for user details
 import com.google.firebase.auth.GoogleAuthProvider // Imports GoogleAuthProvider for Google credential handling
-import com.google.firebase.database.FirebaseDatabase // Imports FirebaseDatabase for accessing the Realtime Database
 import com.google.firebase.storage.FirebaseStorage // Imports FirebaseStorage for accessing Firebase Storage
 import com.shashank.sony.fancytoastlib.FancyToast // Imports FancyToast for displaying custom toast messages
+import kotlinx.coroutines.launch // Import for launching coroutines.
 import java.io.ByteArrayOutputStream // Imports ByteArrayOutputStream for converting images to bytes
-import java.text.SimpleDateFormat // Imports SimpleDateFormat for formatting dates
-import java.util.Date // Imports Date class
-import java.util.Locale // Imports Locale class
 
 // Activity to handle user login functionality, including email/password and Google Sign-In.
 class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inheriting from AppCompatActivity
@@ -42,15 +40,14 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
     private val binding: ActivityLogInScreenBinding by lazy { // Declares binding variable using lazy initialization
         ActivityLogInScreenBinding.inflate(layoutInflater) // Inflates the layout
     }
-    
+
     // Firebase Authentication instance.
     private lateinit var auth: FirebaseAuth // Declares FirebaseAuth instance
-    
+
     // Google Sign-In client.
     private lateinit var googleSignInClient: GoogleSignInClient // Declares GoogleSignInClient instance
-    
-    // Firebase Realtime Database instance.
-    private lateinit var database: FirebaseDatabase // Declares FirebaseDatabase instance
+
+    private lateinit var userRepository: UserRepository // A repository to handle user data.
 
     // Firebase Storage instance.
     private lateinit var storage: FirebaseStorage // Declares FirebaseStorage instance
@@ -62,7 +59,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
 
         // Initialize Firebase instances.
         auth = FirebaseAuth.getInstance() // Gets FirebaseAuth instance
-        database = FirebaseDatabase.getInstance() // Gets FirebaseDatabase instance
+        userRepository = UserRepository() // Initialize the user repository.
         storage = FirebaseStorage.getInstance() // Gets FirebaseStorage instance
 
         // Set click listener for the back button to finish the activity.
@@ -107,6 +104,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                 // Attempt to sign in with email and password using Firebase Auth.
                 auth.signInWithEmailAndPassword(email, password) // Signs in with email and password
                     .addOnCompleteListener(this) { task -> // Adds completion listener
+                        if (isFinishing || isDestroyed) return@addOnCompleteListener // Don't proceed if the activity is no longer active.
                         binding.progressBar.visibility = View.GONE // Hides the progress bar
                         if (task.isSuccessful) { // Checks if sign-in was successful
                             FancyToast.makeText(this, "Login Successful", FancyToast.LENGTH_SHORT, FancyToast.SUCCESS, R.mipmap.blog_app_icon_round, false).show() // Shows success toast
@@ -147,7 +145,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
             }
         }
     }
-    
+
     override fun onStart() {
         super.onStart()
         // Check if user is signed in (non-null) and update UI accordingly.
@@ -159,8 +157,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
     }
 
     // Register a callback for the Google Sign-In activity result.
-    private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { // Registers activity result callback
-        result -> // Lambda parameter for result
+    private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result -> // Registers activity result callback
         if (result.resultCode == RESULT_OK) { // Checks if result is OK
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data) // Gets signed-in account task
             try { // Starts try block for authentication
@@ -169,15 +166,19 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                 val credential = GoogleAuthProvider.getCredential(account.idToken, null) // Gets Firebase credential from Google ID token
                 auth.signInWithCredential(credential) // Signs in to Firebase with credential
                     .addOnCompleteListener { // Adds completion listener
+                        if (isFinishing || isDestroyed) return@addOnCompleteListener // Don't proceed if the activity is no longer active.
                         if (it.isSuccessful) { // Checks if sign-in was successful
                             val user = auth.currentUser // Gets the current Firebase user
                             user?.let { firebaseUser -> // Checks if user is not null
-                                // Directly save user data without re-uploading the image to speed up login
-                                val photoUrl = firebaseUser.photoUrl?.toString() ?: "" // Gets photo URL or empty string
+                                val userName = firebaseUser.displayName ?: "Anonymous" // Provide a default name if the display name is null.
+                                val userEmail = firebaseUser.email ?: "" // Provide an empty string if the email is null.
+                                val googlePhotoUrl = firebaseUser.photoUrl?.toString() ?: "" // Gets photo URL or empty string
                                 // 1. Save data and Login immediately with Google URL
-                                saveUserData(firebaseUser, photoUrl) // Saves user data
+                                saveUserData(firebaseUser, userName, userEmail, googlePhotoUrl) // Saves user data
                                 // 2. Trigger background upload to Storage
-                                uploadGoogleImageToStorage(firebaseUser, photoUrl) // Uploads image in background
+                                if (googlePhotoUrl.isNotEmpty()) { // We only need to upload if there is an image
+                                    uploadGoogleImageToStorage(firebaseUser, userName, userEmail, googlePhotoUrl) // Uploads image in background
+                                }
                             }
                         } else { // Executed if sign-in failed
                             handleSignInFailure() // Handles sign-in failure
@@ -192,7 +193,7 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
     }
 
     // Uploads the user's Google profile image to Firebase Storage in background
-    private fun uploadGoogleImageToStorage(user: FirebaseUser, photoUrl: String) { // Defines function to upload image
+    private fun uploadGoogleImageToStorage(user: FirebaseUser, userName: String, userEmail: String, photoUrl: String) { // Defines function to upload image
         if (photoUrl.isEmpty()) return // Returns if URL is empty
 
         // Use applicationContext to prevent issues if activity finishes
@@ -209,8 +210,10 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
                     storageRef.putBytes(data) // Uploads data to storage
                         .addOnSuccessListener { // Adds success listener
                             storageRef.downloadUrl.addOnSuccessListener { downloadUrl -> // Gets download URL on success
-                                // Silently update the profile image in the database
-                                database.reference.child("users").child(user.uid).child("profileImage").setValue(downloadUrl.toString()) // Updates profile image URL in DB
+                                lifecycleScope.launch { // Launch a coroutine in the lifecycle scope.
+                                    if (isFinishing || isDestroyed) return@launch // Don't proceed if the activity is no longer active.
+                                    userRepository.saveUserProfile(user.uid, userName, userEmail, downloadUrl.toString()) // Silently update the profile image in the database
+                                }
                             }
                         }
                 }
@@ -222,32 +225,25 @@ class LogInScreen : AppCompatActivity() { // Defines the LogInScreen class inher
     }
 
     // Save user data to Firebase Realtime Database.
-    private fun saveUserData(user: FirebaseUser, imageUrl: String) { // Defines function to save user data
-        val creationTimestamp = user.metadata?.creationTimestamp ?: System.currentTimeMillis() // Gets creation timestamp
-        val creationDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(creationTimestamp)) // Formats creation date
-        
-        // FIX: Use updateChildren instead of setValue to preserve "Blogs" node and other sub-nodes
-        val userUpdates = mapOf(
-            "name" to user.displayName,
-            "email" to user.email,
-            "profileImage" to imageUrl,
-            "creationDate" to creationDate
-        )
-
-        database.reference.child("users").child(user.uid).updateChildren(userUpdates).addOnCompleteListener { task -> // Sets user data in DB
-            binding.progressBar.visibility = View.GONE // Hides progress bar
-            if (task.isSuccessful) { // Checks if successful
-                FancyToast.makeText(this, "Login Successful", FancyToast.LENGTH_SHORT, FancyToast.SUCCESS, R.mipmap.blog_app_icon_round, false).show() // Shows success toast
-                startActivity(Intent(this, HomePage::class.java)) // Starts HomePage activity
-                finishAffinity() // Finishes all activities
-            } else { // Executed if failed
-                handleSignInFailure() // Handles failure
+    private fun saveUserData(user: FirebaseUser, userName: String, userEmail: String, imageUrl: String) { // Defines function to save user data
+        lifecycleScope.launch { // Launch a coroutine in the lifecycle scope.
+            try { // Start a try-catch block for error handling.
+                userRepository.saveUserProfile(user.uid, userName, userEmail, imageUrl) // Save the user profile using the repository.
+                if (isFinishing || isDestroyed) return@launch // Don't proceed if the activity is no longer active.
+                binding.progressBar.visibility = View.GONE // Hide the progress bar on successful registration.
+                FancyToast.makeText(this@LogInScreen, "Login Successful", FancyToast.LENGTH_SHORT, FancyToast.SUCCESS, R.mipmap.blog_app_icon_round, false).show() // Show a success message to the user.
+                startActivity(Intent(this@LogInScreen, HomePage::class.java)) // Navigate to the home page.
+                finishAffinity() // Finish all activities in the current task.
+            } catch (e: Exception) { // Catch any exceptions that occur during the process.
+                if (isFinishing || isDestroyed) return@launch // Don't proceed if the activity is no longer active.
+                handleSignInFailure() // Handles sign-in failure
             }
         }
     }
 
     // Handle failures during the sign-in process.
     private fun handleSignInFailure() { // Defines failure handling function
+        if (isFinishing || isDestroyed) return // Don't proceed if the activity is no longer active.
         binding.progressBar.visibility = View.GONE // Hides progress bar
         FancyToast.makeText(this, "Google Sign-In Failed", FancyToast.LENGTH_SHORT, FancyToast.ERROR, R.mipmap.blog_app_icon_round, false).show() // Shows error toast
     }

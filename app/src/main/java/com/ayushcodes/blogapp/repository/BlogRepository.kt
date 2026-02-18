@@ -10,8 +10,6 @@ import com.google.firebase.database.FirebaseDatabase // Imports FirebaseDatabase
 import com.google.firebase.database.MutableData // Imports MutableData for transactions
 import com.google.firebase.database.Transaction // Imports Transaction class
 import com.google.firebase.database.ValueEventListener // Imports ValueEventListener for listening to data
-import kotlinx.coroutines.CoroutineScope // Imports CoroutineScope
-import kotlinx.coroutines.Dispatchers // Imports Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow // Imports MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow // Imports StateFlow
 import kotlinx.coroutines.flow.asStateFlow // Imports asStateFlow
@@ -122,7 +120,7 @@ object BlogRepository { // Defines BlogRepository singleton object
                     isSaved = isSaved, // Sets isSaved
                     likeCount = likeCount // Sets likeCount
                 )
-                
+
                 // Ensure we listen to like count updates for this blog if not already
                 if (!activeBlogListeners.containsKey(blogId)) { // Checks if listener exists
                    monitorBlogLikeCount(blogId) // Adds monitor
@@ -131,14 +129,14 @@ object BlogRepository { // Defines BlogRepository singleton object
             newState // Returns new state
         }
     }
-    
+
     private fun monitorBlogLikeCount(blogId: String) { // Method to monitor like count for a blog
         val listener = object : ValueEventListener { // Creates ValueEventListener
             override fun onDataChange(snapshot: DataSnapshot) { // Called when data changes
                 val likeCount = snapshot.getValue(Int::class.java) ?: 0 // Gets like count
                 _interactionState.update { currentMap -> // Updates interaction state
                     val currentState = currentMap[blogId] ?: PostInteractionState(blogId) // Gets current state for blog
-                    
+
                     // If we are currently toggling, don't let the listener overwrite our optimistic count immediately
                     // This prevents the "flash" of old data if the listener is slightly faster than the transaction commit
                     if (currentState.isLikeToggling) { // Checks if toggling
@@ -207,7 +205,7 @@ object BlogRepository { // Defines BlogRepository singleton object
         }
 
         val blogRef = database.getReference("blogs").child(blogId) // References blog node
-        val userLikedRef = database.getReference("users").child(userId).child("likedBlogs").child(blogId) // References user liked node
+        val userLikedRef = database.getReference("users").child(userId).child("likedBlogs").child(blogId) // Create a reference to the user's liked blogs node.
 
         blogRef.runTransaction(object : Transaction.Handler { // Runs transaction on blog node
             override fun doTransaction(currentData: MutableData): Transaction.Result { // Transaction logic
@@ -242,9 +240,9 @@ object BlogRepository { // Defines BlogRepository singleton object
                     if (isCurrentlyLiked) { // Checks if was liked
                         userLikedRef.removeValue() // Removes from user liked list
                     } else { // Executed if was not liked
-                        userLikedRef.setValue(blogItem) // Adds to user liked list
+                        userLikedRef.setValue(true) // Set the value to true to indicate a liked blog.
                     }
-                    
+
                     // Fallback: If for some reason listener doesn't fire, ensure we clear the toggle flag after a short delay or implicitly via next update
                     // But relying on listener is cleaner.
                 }
@@ -270,7 +268,7 @@ object BlogRepository { // Defines BlogRepository singleton object
                 _interactionState.update { it + (blogId to currentState) } // Reverts state on failure
             }
         } else { // Executed if not saved
-            userSavedRef.setValue(blogItem).addOnFailureListener { // Sets value, adds failure listener
+            userSavedRef.setValue(true).addOnFailureListener { // Set the value to true to indicate a saved blog
                 // Revert
                 _interactionState.update { it + (blogId to currentState) } // Reverts state on failure
             }

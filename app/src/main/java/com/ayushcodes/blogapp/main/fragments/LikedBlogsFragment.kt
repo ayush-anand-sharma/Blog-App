@@ -29,7 +29,7 @@ class LikedBlogsFragment : Fragment() { // Defines LikedBlogsFragment class inhe
 
     // Firebase Authentication instance to manage user authentication
     private lateinit var auth: FirebaseAuth // Declares FirebaseAuth instance
-    
+
     // Firebase Database instance to interact with Realtime Database
     private lateinit var database: FirebaseDatabase // Declares FirebaseDatabase instance
 
@@ -78,7 +78,7 @@ class LikedBlogsFragment : Fragment() { // Defines LikedBlogsFragment class inhe
                 }
             }
         )
-        
+
         binding.likedBlogsRecyclerView.apply { // Applies configuration to RecyclerView
             layoutManager = LinearLayoutManager(context) // Sets LayoutManager
             adapter = blogAdapter // Sets adapter
@@ -89,56 +89,55 @@ class LikedBlogsFragment : Fragment() { // Defines LikedBlogsFragment class inhe
         // Fetch the list of liked blogs for the current user from Firebase
         val userId = auth.currentUser?.uid // Gets current user ID
         if (userId != null) { // Checks if user ID is not null
+            binding.progressBar.visibility = View.VISIBLE // Show the progress bar while loading.
             val likedBlogsReference = database.reference.child("users").child(userId).child("likedBlogs") // References likedBlogs node
             // Attach a listener to get updates when the liked blogs change
-            likedBlogsReference.addListenerForSingleValueEvent(object : ValueEventListener { // Adds single value listener
-                override fun onDataChange(snapshot: DataSnapshot) { // Called when data changes
-                    val newLikedItems = mutableListOf<BlogItemModel>() // Creates mutable list for items
-                    val pendingCount = snapshot.childrenCount // Gets count of children
-                    var loadedCount = 0 // Initializes loaded count
-
-                    if (pendingCount == 0L) { // Checks if no liked blogs
-                         blogAdapter.submitList(emptyList()) // Submits empty list
-                         return // Returns
+            likedBlogsReference.addValueEventListener(object : ValueEventListener { // Adds a listener for a single value event
+                override fun onDataChange(snapshot: DataSnapshot) { // Called when the data is retrieved.
+                    val likedBlogIds = snapshot.children.mapNotNull { it.key } // Get the list of liked blog IDs.
+                    if (likedBlogIds.isEmpty()) { // If there are no liked blogs.
+                        binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                        blogAdapter.submitList(emptyList()) // Submit an empty list to the adapter.
+                        return // Return from the function.
                     }
 
-                    // Iterate through the snapshot and fetch details for each liked blog
-                    for (blogSnapshot in snapshot.children) { // Iterates through each liked blog snapshot
-                        val likedBlogId = blogSnapshot.key // Gets blog ID key
-                        if (likedBlogId != null) { // Checks if key is not null
-                            // Retrieve the full blog item details from the "blogs" node using the blog ID
-                            val blogReference = database.reference.child("blogs").child(likedBlogId) // References specific blog node
-                            blogReference.addListenerForSingleValueEvent(object : ValueEventListener { // Adds single value listener
-                                override fun onDataChange(snapshot: DataSnapshot) { // Called when blog data is received
-                                    val blogItem = snapshot.getValue(BlogItemModel::class.java) // deserializes blog item
-                                    if (blogItem != null) { // Checks if blog item is not null
-                                        newLikedItems.add(blogItem) // Adds to list
-                                    }
-                                    loadedCount++ // Increments loaded count
-                                    if (loadedCount.toLong() == pendingCount) { // Checks if all items loaded
-                                        // Initialize repository state
-                                        BlogRepository.initializeState(newLikedItems) // Initializes repository state
-                                        blogAdapter.submitList(newLikedItems.toList()) // Submits list to adapter
-                                    }
-                                }
+                    val blogsRef = database.reference.child("blogs") // Get a reference to the main blogs node.
+                    val likedBlogItems = mutableListOf<BlogItemModel>() // Create a mutable list to hold the liked blog items.
+                    var remaining = likedBlogIds.size // Keep track of the remaining blogs to fetch.
 
-                                override fun onCancelled(error: DatabaseError) { // Called on cancellation
-                                    loadedCount++ // Increments loaded count to avoid stuck loading
+                    likedBlogIds.forEach { blogId -> // For each liked blog ID.
+                        blogsRef.child(blogId).addListenerForSingleValueEvent(object : ValueEventListener { // Add a listener to get the blog data.
+                            override fun onDataChange(blogSnapshot: DataSnapshot) { // Called when the blog data is retrieved.
+                                val blogItem = blogSnapshot.getValue(BlogItemModel::class.java) // Get the blog item.
+                                if (blogItem != null) { // If the blog item is not null.
+                                    likedBlogItems.add(blogItem) // Add the blog item to the list.
                                 }
-                            })
-                        } else { // Executed if key is null
-                            loadedCount++ // Increments loaded count
-                        }
+                                remaining-- // Decrement the remaining count.
+                                if (remaining == 0) { // If all blogs have been fetched.
+                                    binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                                    likedBlogItems.reverse() // Reverse the list to show the most recently liked blogs first.
+                                    BlogRepository.initializeState(likedBlogItems) // Initialize the repository state.
+                                    blogAdapter.submitList(likedBlogItems) // Submit the list to the adapter.
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) { // Called if the data retrieval is cancelled.
+                                remaining-- // Decrement the remaining count.
+                                if (remaining == 0) { // If all blogs have been fetched.
+                                    binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                                }
+                            }
+                        })
                     }
                 }
 
-                override fun onCancelled(error: DatabaseError) { // Called on cancellation of main listener
-                    // Handle potential database errors here
+                override fun onCancelled(error: DatabaseError) { // Called if the data retrieval is cancelled.
+                    binding.progressBar.visibility = View.GONE // Hide the progress bar.
                 }
             })
         }
     }
-    
+
     // Observe global state changes for likes and saves to update UI
     private fun observeInteractionState() { // Defines observeInteractionState method
         viewLifecycleOwner.lifecycleScope.launch { // Launches coroutine in view lifecycle scope

@@ -28,13 +28,13 @@ class SavedArticlesActivity : AppCompatActivity() { // Defines the SavedArticles
 
     // Lazily initialize view binding for the activity layout
     private lateinit var binding: ActivitySavedArticlesBinding // Declares a variable for view binding
-    
+
     // Firebase Database instance to interact with Realtime Database
     private lateinit var database: FirebaseDatabase // Declares a variable for the Firebase Database instance
-    
+
     // Firebase Authentication instance to manage user authentication
     private lateinit var auth: FirebaseAuth // Declares a variable for the Firebase Authentication instance
-    
+
     // Adapter for the RecyclerView to display blog items
     private lateinit var blogAdapter: BlogAdapter // Declares a variable for the BlogAdapter
 
@@ -93,13 +93,13 @@ class SavedArticlesActivity : AppCompatActivity() { // Defines the SavedArticles
                 }
             }
         )
-        
+
         binding.savedArticlesRecyclerView.apply { // Applies configuration to the RecyclerView
             layoutManager = LinearLayoutManager(this@SavedArticlesActivity) // Sets the LayoutManager to LinearLayoutManager
             adapter = blogAdapter // Sets the adapter for the RecyclerView
         }
     }
-    
+
     // Observes the global interaction state for UI updates
     private fun observeInteractionState() { // Defines a method to observe interaction state
         lifecycleScope.launch { // Launches a coroutine in the lifecycle scope
@@ -111,33 +111,52 @@ class SavedArticlesActivity : AppCompatActivity() { // Defines the SavedArticles
 
     // Retrieves the current user's saved blogs from the Firebase Realtime Database
     private fun fetchSavedBlogs() { // Defines a method to fetch saved blogs
-        // Show progress bar while loading data
-        binding.progressBar.visibility = View.VISIBLE // Sets the progress bar to visible
-        val userId = auth.currentUser?.uid ?: return // Gets the current user ID, returning if null
-        val savedBlogsRef = database.reference.child("users").child(userId).child("savedBlogs") // References the "savedBlogs" node for the user
+        binding.progressBar.visibility = View.VISIBLE // Show the progress bar while loading.
+        val userId = auth.currentUser?.uid ?: return // Get the current user's ID, or return if null.
+        val savedBlogsRef = database.reference.child("users").child(userId).child("savedBlogs") // Get a reference to the user's saved blogs.
 
-        // Attach a listener to get the data once
-        savedBlogsRef.addListenerForSingleValueEvent(object : ValueEventListener { // Adds a listener for a single value event
-            override fun onDataChange(snapshot: DataSnapshot) { // Called when data is retrieved
-                val savedBlogItems = mutableListOf<BlogItemModel>() // Creates a mutable list to hold blog items
-                // Iterate through the snapshot and add each blog item to the list
-                for (blogSnapshot in snapshot.children) { // Iterates through each child in the snapshot
-                    val blogItem = blogSnapshot.getValue(BlogItemModel::class.java) // deserializes the snapshot into a BlogItemModel
-                    if (blogItem != null) { // Checks if the deserialized item is not null
-                        savedBlogItems.add(blogItem) // Adds the blog item to the list
-                    }
+        savedBlogsRef.addListenerForSingleValueEvent(object : ValueEventListener { // Add a listener to get the saved blog IDs.
+            override fun onDataChange(snapshot: DataSnapshot) { // Called when the data is retrieved.
+                val savedBlogIds = snapshot.children.mapNotNull { it.key } // Get the list of saved blog IDs.
+                if (savedBlogIds.isEmpty()) { // If there are no saved blogs.
+                    binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                    blogAdapter.submitList(emptyList()) // Submit an empty list to the adapter.
+                    return // Return from the function.
                 }
-                savedBlogItems.reverse() // Display the most recently saved items first // Reverses the list to show newest first
-                
-                BlogRepository.initializeState(savedBlogItems) // Initializes the repository state with the fetched items
-                blogAdapter.submitList(savedBlogItems) // Submits the list to the adapter
-                
-                binding.progressBar.visibility = View.GONE // Hide the progress bar // Hides the progress bar
+
+                val blogsRef = database.reference.child("blogs") // Get a reference to the main blogs node.
+                val savedBlogItems = mutableListOf<BlogItemModel>() // Create a mutable list to hold the saved blog items.
+                var remaining = savedBlogIds.size // Keep track of the remaining blogs to fetch.
+
+                savedBlogIds.forEach { blogId -> // For each saved blog ID.
+                    blogsRef.child(blogId).addListenerForSingleValueEvent(object : ValueEventListener { // Add a listener to get the blog data.
+                        override fun onDataChange(blogSnapshot: DataSnapshot) { // Called when the blog data is retrieved.
+                            val blogItem = blogSnapshot.getValue(BlogItemModel::class.java) // Get the blog item.
+                            if (blogItem != null) { // If the blog item is not null.
+                                savedBlogItems.add(blogItem) // Add the blog item to the list.
+                            }
+                            remaining-- // Decrement the remaining count.
+                            if (remaining == 0) { // If all blogs have been fetched.
+                                binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                                savedBlogItems.reverse() // Reverse the list to show the most recently saved blogs first.
+                                BlogRepository.initializeState(savedBlogItems) // Initialize the repository state.
+                                blogAdapter.submitList(savedBlogItems) // Submit the list to the adapter.
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) { // Called if the data retrieval is cancelled.
+                            remaining-- // Decrement the remaining count.
+                            if (remaining == 0) { // If all blogs have been fetched.
+                                binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                            }
+                        }
+                    })
+                }
             }
 
-            override fun onCancelled(error: DatabaseError) { // Called when the listener is cancelled
-                binding.progressBar.visibility = View.GONE // Hide the progress bar // Hides the progress bar
-                showToast("Failed to load saved articles: ${error.message}", FancyToast.ERROR) // Shows a toast with the error message
+            override fun onCancelled(error: DatabaseError) { // Called if the data retrieval is cancelled.
+                binding.progressBar.visibility = View.GONE // Hide the progress bar.
+                showToast("Failed to load saved articles: ${error.message}", FancyToast.ERROR) // Show an error toast.
             }
         })
     }

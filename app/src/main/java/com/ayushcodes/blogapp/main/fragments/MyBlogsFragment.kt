@@ -107,6 +107,7 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
     }
 
     private fun fetchMyBlogs() { // EDITED: Defines a new function to fetch the user's blogs.
+        binding.progressBar.visibility = View.VISIBLE // Show the progress bar while loading.
         eventListener = object : ValueEventListener { // EDITED: Creates a new ValueEventListener to fetch the blog posts.
             override fun onDataChange(snapshot: DataSnapshot) { // EDITED: This method is called whenever the data at the listened reference changes.
                 val blogItems = mutableListOf<BlogItemModel>() // EDITED: Creates a mutable list to store the blog items.
@@ -116,13 +117,14 @@ class MyBlogsFragment : Fragment() { // Defines MyBlogsFragment class inheriting
                         blogItems.add(blogItem) // EDITED: Adds the blog item to the list.
                     }
                 }
+                binding.progressBar.visibility = View.GONE // Hide the progress bar.
                 blogItems.reverse() // EDITED: Reverses the list to show the newest blogs first.
                 BlogRepository.initializeState(blogItems) // EDITED: Initializes the state of the BlogRepository with the fetched blog items.
                 blogAdapter.submitList(blogItems) // EDITED: Submits the list of blog items to the adapter to be displayed.
             }
 
             override fun onCancelled(error: DatabaseError) { // EDITED: This method is called if the data listener is cancelled.
-                // Handle potential database errors here
+                binding.progressBar.visibility = View.GONE // Hide the progress bar.
             }
         }
         userBlogsReference.addValueEventListener(eventListener!!) // EDITED: Adds the event listener to the database reference.

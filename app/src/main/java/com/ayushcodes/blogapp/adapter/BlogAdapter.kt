@@ -1,6 +1,7 @@
 package com.ayushcodes.blogapp.adapter // Defines the package name for this file
 
 // Import necessary Android and library classes
+import android.content.Intent
 import android.view.LayoutInflater // Imports LayoutInflater to inflate XML layouts
 import android.view.View // Imports View class for UI elements
 import android.view.ViewGroup // Imports ViewGroup as the base class for layouts
@@ -9,13 +10,15 @@ import androidx.recyclerview.widget.ListAdapter // Imports ListAdapter for handl
 import androidx.recyclerview.widget.RecyclerView // Imports RecyclerView for displaying lists
 import com.ayushcodes.blogapp.R // Imports the R class for accessing resources
 import com.ayushcodes.blogapp.databinding.BlogItemBinding // Imports the generated binding class for the blog item layout
+import com.ayushcodes.blogapp.main.ProfilePage
+import com.ayushcodes.blogapp.main.UserProfileActivity
 import com.ayushcodes.blogapp.model.BlogItemModel // Imports the data model for blog items
 import com.ayushcodes.blogapp.model.PostInteractionState // Imports the model for interaction state (likes, saves)
 import com.bumptech.glide.Glide // Imports Glide for image loading
 import com.google.firebase.auth.FirebaseAuth // Imports FirebaseAuth for user authentication
 
 // Handles global like/save state synchronization across all screens
-class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
+class BlogAdapter(
     private val onReadMoreClick: (BlogItemModel) -> Unit, // Lambda callback for "Read More" click
     private val onLikeClick: (BlogItemModel) -> Unit, // Lambda callback for "Like" button click
     private val onSaveClick: (BlogItemModel) -> Unit, // Lambda callback for "Save" button click
@@ -71,20 +74,18 @@ class BlogAdapter( // Defines the BlogAdapter class inheriting from ListAdapter
 
                 readMoreButton.setOnClickListener { onReadMoreClick(blogItem) } // Sets click listener for "Read More"
 
-                // Profile click listeners (kept from original)
-                val context = root.context // Gets context from the root view
-                val profileClickListener = View.OnClickListener { // Creates a common click listener for profile
-                     val intent = if (blogItem.userId == currentUserId) { // Checks if the blog author is the current user
-                         android.content.Intent(context, com.ayushcodes.blogapp.main.ProfilePage::class.java) // Intent for own profile
-                     } else { // Executed if author is another user
-                         android.content.Intent(context, com.ayushcodes.blogapp.main.UserProfileActivity::class.java).apply { // Intent for other user's profile
-                             putExtra("userId", blogItem.userId) // Puts user ID extra
-                         }
-                     }
-                     context.startActivity(intent) // Starts the profile activity
+                val profileClickListener = View.OnClickListener { // Create a single click listener for the author's profile.
+                    val intent = if (blogItem.userId == currentUserId) { // If the author is the current user.
+                        Intent(root.context, ProfilePage::class.java) // Go to the main profile page.
+                    } else { // If the author is another user.
+                        Intent(root.context, UserProfileActivity::class.java).apply { // Go to the other user's profile page.
+                            putExtra("userId", blogItem.userId) // Pass the author's user ID.
+                        }
+                    }
+                    root.context.startActivity(intent) // Start the activity.
                 }
-                profile.setOnClickListener(profileClickListener) // Sets listener on profile image
-                userName.setOnClickListener(profileClickListener) // Sets listener on user name
+                profile.setOnClickListener(profileClickListener) // Set the click listener on the profile image.
+                userName.setOnClickListener(profileClickListener) // Set the click listener on the user's name.
 
                 val isAuthor = blogItem.userId == currentUserId // Checks if the current user is the author of the blog post
                 if (isAuthor && onEditClick != null && onDeleteClick != null) { // If the user is the author and click listeners are provided

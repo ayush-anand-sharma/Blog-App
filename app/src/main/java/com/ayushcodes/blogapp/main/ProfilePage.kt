@@ -84,11 +84,14 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
 
         // Set up tabs for viewing user's blogs and liked blogs
         setupTabs() // Calls setupTabs method
-        // Load the user's data from Firebase
-        loadUserData() // Calls loadUserData method
         // Set up click listeners for UI elements
         setupClickListeners() // Calls setupClickListeners method
         setupProfileImageClickListener() // EDITED: Sets up the click listener for the profile image.
+    }
+
+    override fun onResume() { // Add onResume lifecycle method to refresh data when the screen becomes visible.
+        super.onResume() // Call the superclass's onResume method.
+        loadUserData() // Load user data every time the activity resumes to ensure it's up-to-date.
     }
 
     private fun setupProfileImageClickListener() { // EDITED: Defines a new function to set up the click listener for the profile image.
@@ -127,8 +130,9 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
         }
 
         binding.editProfileButton.setOnClickListener {
-            val intent = Intent(this, EditProfile::class.java)
-            startActivity(intent)
+            val intent = Intent(this, EditProfile::class.java) // Creates an Intent to navigate to the EditProfile screen.
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) // This flag brings an existing instance of the activity to the front of the stack, rather than creating a new one.
+            startActivity(intent) // Starts the EditProfile activity with the specified flag to ensure proper navigation.
         }
     }
 
@@ -161,7 +165,7 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
         val userId = auth.currentUser?.uid ?: return // Gets user ID, returns if null
         val userReference = database.reference.child("users").child(userId) // References user node
 
-        userReference.addValueEventListener(object : ValueEventListener { // Adds ValueEventListener
+        userReference.addListenerForSingleValueEvent(object : ValueEventListener { // Use addListenerForSingleValueEvent to avoid multiple calls
             override fun onDataChange(snapshot: DataSnapshot) { // Called when data changes
                 if (isDestroyed || isFinishing) return // Checks activity state
 
@@ -212,7 +216,7 @@ class ProfilePage : AppCompatActivity() { // Defines ProfilePage class inheritin
             override fun onCancelled(error: DatabaseError) { // Called on cancellation
                 if (!isDestroyed || isFinishing) { // Checks activity state
                     binding.progressBar.visibility = View.GONE // Hides progress bar
-                    showToast("Something went wrong.", FancyToast.ERROR) // Shows error toast
+                    showToast("Something went wrong.", FancyToast.ERROR) // Shows an error toast
                 }
             }
         })
